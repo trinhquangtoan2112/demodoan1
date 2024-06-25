@@ -60,11 +60,11 @@ namespace demodoan1.Controllers
         //        user.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
         //        var user1 = new User
         //        {
-                   
+
         //            MatKhau = user.MatKhau,
         //            Email = user.Email,
         //            MaQuyen = 2,
-                   
+
         //        };
         //        _appDbContext.User.Add(user1);
         //        await  _appDbContext.SaveChangesAsync();
@@ -74,7 +74,7 @@ namespace demodoan1.Controllers
         //        return BadRequest(ex.Message);
         //    }
         //}
-        [HttpPost("SignUp",Name = "SignUp")]
+        [HttpPost("SignUp", Name = "SignUp")]
         public async Task<IActionResult> SignUp([FromBody] UserDto user)
         {
             try
@@ -86,9 +86,9 @@ namespace demodoan1.Controllers
                     MatKhau = user.MatKhau,
                     Email = user.Email,
                     MaQuyen = 1,
-                    TrangThai=false,
-                    DaXoa=false
-                     
+                    TrangThai = false,
+                    DaXoa = false
+
                 };
                 _appDbContext.Users.Add(user1);
                 await _appDbContext.SaveChangesAsync();
@@ -99,13 +99,13 @@ namespace demodoan1.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("Login",Name ="Login")]
+        [HttpPost("Login", Name = "Login")]
         public async Task<IActionResult> Login([FromBody] UserDto user)
         {
             try
             {
-                user.MatKhau  = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
-             
+                user.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
+
                 var taiKhoan = await _appDbContext.Users.Include(u => u.MaQuyenNavigation).SingleOrDefaultAsync(u => u.Email == user.Email && u.MatKhau == user.MatKhau);
                 var responseData = new
                 {
