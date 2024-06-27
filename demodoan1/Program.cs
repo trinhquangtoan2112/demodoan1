@@ -1,6 +1,7 @@
 using demodoan1.Data;
 using demodoan1.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Configuration;
@@ -18,6 +19,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
+
 var connectionString = builder.Configuration.GetConnectionString("MyDb");
 builder.Services.AddDbContext<DbDoAnTotNghiepContext>(options =>
 {
