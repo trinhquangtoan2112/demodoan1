@@ -47,8 +47,9 @@ public partial class DbDoAnTotNghiepContext : DbContext
     public virtual DbSet<Truyen> Truyens { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-   
 
+
+   
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -293,18 +294,19 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
         modelBuilder.Entity<Giaodich>(entity =>
         {
-            entity.HasKey(e => new { e.MaChuongTruyen, e.MaNguoiDung })
-                .HasName("PRIMARY")
-                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+            entity.HasKey(e => e.MaGiaoDich).HasName("PRIMARY");
 
             entity.ToTable("giaodich");
 
+            entity.HasIndex(e => e.MaChuongTruyen, "FK_giaodich_ChuongTruyen");
+
             entity.HasIndex(e => e.MaNguoiDung, "FK_giaodich_NguoiDung");
 
-            entity.Property(e => e.MaChuongTruyen).HasColumnName("maChuongTruyen");
-            entity.Property(e => e.MaNguoiDung).HasColumnName("maNguoiDung");
+            entity.Property(e => e.MaGiaoDich).HasColumnName("maGiaoDich");
             entity.Property(e => e.LoaiGiaoDich).HasColumnName("loaiGiaoDich");
             entity.Property(e => e.LoaiTien).HasColumnName("loaiTien");
+            entity.Property(e => e.MaChuongTruyen).HasColumnName("maChuongTruyen");
+            entity.Property(e => e.MaNguoiDung).HasColumnName("maNguoiDung");
             entity.Property(e => e.NgayCapNhap)
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
