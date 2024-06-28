@@ -177,7 +177,7 @@ namespace demodoan1.Controllers
                 else
                 {
                     string subject = "Xac thuc tai khoan";
-                    string link = "https://localhost:7094/Login/authenAccount?token=bearer%20";
+                    string link = "https://localhost:7094/Login/authenAccount?check=";
                     bool ketQua = await sendEmail(dataUser.Email, subject, link,tokenAuthen);
                     if (ketQua)
                     {
@@ -221,13 +221,12 @@ namespace demodoan1.Controllers
 
        
 
-        [HttpGet("authenAccount",Name = "authenAccount")]
-        public async Task<IActionResult> authenAccount(string token)
+        [HttpPut("authenAccount", Name = "authenAccount")]
+        public async Task<IActionResult> authenAccount(string check)
         {
             try {
-                token = token.Trim();
-                var data = token.Substring(7);
-                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+               
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(check);
                 string iDNguoiDung = claimsData["IdUserName"];
                 var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung));
                 if (dataUser.TrangThai==true)
@@ -284,7 +283,7 @@ namespace demodoan1.Controllers
             }
            
         }
-        [HttpGet("ChangePassword", Name = "ChangePassword")]
+        [HttpPut("ChangePassword", Name = "ChangePassword")]
         public async Task<IActionResult> ChangePassword(string token,string password)
         {
             try
