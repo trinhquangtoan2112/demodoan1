@@ -105,11 +105,10 @@ namespace demodoan1.Controllers
             {
                 _context.Theloais.Add(theloai);
                 await _context.SaveChangesAsync();
-                return Ok(new { Success = 200, Data = theloai });
+                return Ok(new { Success = 200, Data = theloaiDto });
             }
             catch (Exception ex)
             {
-                // Log the error (uncomment ex variable name and write a log.)
                 return StatusCode(500, new { Success = 500, Message = "An error occurred while saving the data.", Error = ex.Message });
             }
         }
