@@ -154,7 +154,7 @@ namespace demodoan1.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        
         [HttpPost("changeAuthen", Name = "changeAuthen")]
         public async Task<IActionResult> checkToken(string token)
         {
@@ -194,32 +194,6 @@ namespace demodoan1.Controllers
 
             }
         }
-
-        //    //tokenAuthen = GenerateJwtToken(dataUser);
-        //    //subject = "Quen mat khau";
-        //    //link = "https://localhost:7094/Login/forgetPassword?token=bearer%20";
-
-
-        //    //if (dataUser == null)
-        //    //{
-        //    //    return NotFound(new { Status = 404, message = "Khong tim thay" });
-        //    //}
-        //    //else
-        //    //{
-        //    //    if (dataUser.TrangThai == true && loai == 1)
-        //    //    {
-        //    //        return BadRequest(new
-        //    //        {
-        //    //            Status = 400,
-        //    //            message = "Da thay doi trang thai"
-        //    //        });
-        //    //    }
-        //    //}
-
-        //}
-
-
-       
 
         [HttpGet("authenAccount",Name = "authenAccount")]
         public async Task<IActionResult> authenAccount(string token)
@@ -405,5 +379,41 @@ namespace demodoan1.Controllers
 
 
         }
+
+        [HttpGet("GetDsNguoiDung", Name = "GetDsNguoiDung")]
+        public async Task<IActionResult> GetDsNguoiDung()
+        {
+            try
+            {
+                var users = await _appDbContext.Users.Include(u => u.MaQuyenNavigation).ToListAsync();
+                var responseData = users.Select(u => new
+                {
+                    MaNguoiDung = u.MaNguoiDung,
+                    TenNguoiDung = u.TenNguoiDung,
+                    MatKhau = PasswordEncryptDecord.DecodeFrom64(u.MatKhau),
+                    Email = u.Email,
+                    NgaySinh = u.NgaySinh,
+                    GioiTinh = u.GioiTinh,
+                    AnhDaiDien = u.AnhDaiDien,
+                    TrangThai = u.TrangThai,
+                    DaXoa = u.DaXoa,
+                    SoDeCu = u.SoDeCu,
+                    SoXu = u.SoXu,
+                    SoChiaKhoa = u.SoChiaKhoa,
+                    Vip = u.Vip,
+                    NgayHetHanVip = u.NgayHetHanVip,
+                    NgayTao = u.Ngaytao,
+                    NgayCapNhap = u.NgayCapNhap,
+                    TenQuyen = u.MaQuyenNavigation != null ? u.MaQuyenNavigation.TenQuyen : null
+                }).ToList();
+
+                return Ok(new { Success = 200, Data = responseData });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = 400, Message = ex.Message });
+            }
+        }
+
     }
 }
