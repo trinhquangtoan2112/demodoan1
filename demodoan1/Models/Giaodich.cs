@@ -5,6 +5,8 @@ namespace demodoan1.Models;
 
 public partial class Giaodich
 {
+    public int MaGiaoDich { get; set; }
+
     public int MaChuongTruyen { get; set; }
 
     public int MaNguoiDung { get; set; }
