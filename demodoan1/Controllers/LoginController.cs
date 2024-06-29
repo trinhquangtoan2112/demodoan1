@@ -18,6 +18,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Net.WebRequestMethods;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace demodoan1.Controllers
 {
@@ -429,31 +432,39 @@ namespace demodoan1.Controllers
             try
             {
                string tokenData = TokenClass.Decodejwt(token);
-                var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData));
-                if(dataUser == null)
+                if(Int64.Parse(tokenData) == adduser.maNguoiDung)
                 {
-                    return NotFound(new
+                    var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData));
+                    if (dataUser == null)
                     {
-                        success = StatusCodes.Status404NotFound,
-                        data = "Không tìm thấy"
-                    });
-                }
-                else
-                {
-                    dataUser.AnhDaiDien = adduser.AnhDaiDien !=null ? adduser.AnhDaiDien : dataUser.AnhDaiDien;
-                    dataUser.TenNguoiDung = adduser.TenNguoiDung != null ? adduser.TenNguoiDung : dataUser.TenNguoiDung;
-                    dataUser.GioiTinh = adduser.GioiTinh != null ? adduser.GioiTinh : dataUser.GioiTinh;
-                    dataUser.NgaySinh = adduser.NgaySinh != null ? adduser.NgaySinh : dataUser.NgaySinh;
+                        return NotFound(new
+                        {
+                            success = StatusCodes.Status404NotFound,
+                            data = "Không tìm thấy"
+                        });
+                    }
+                    else
+                    {
+                        dataUser.AnhDaiDien = adduser.AnhDaiDien != null ? adduser.AnhDaiDien : dataUser.AnhDaiDien;
+                        dataUser.TenNguoiDung = adduser.TenNguoiDung != null ? adduser.TenNguoiDung : dataUser.TenNguoiDung;
+                        dataUser.GioiTinh = adduser.GioiTinh != null ? adduser.GioiTinh : dataUser.GioiTinh;
+                        dataUser.NgaySinh = adduser.NgaySinh != null ? adduser.NgaySinh : dataUser.NgaySinh;
 
-                    _appDbContext.Users.Update(dataUser);
-                    _appDbContext.SaveChanges();
-                    return Ok(new
-                    {
-                        success = StatusCodes.Status200OK,
-                        data = adduser,
-                        message ="Thành công"
-                    });
+                        _appDbContext.Users.Update(dataUser);
+                        _appDbContext.SaveChanges();
+                        return Ok(new
+                        {
+                            success = StatusCodes.Status200OK,
+                            data = adduser,
+                            message = "Thành công"
+                        });
+                    }
                 }
+                return Unauthorized(new
+                {
+                    status = StatusCodes.Status401Unauthorized,
+                    data ="Khong co quyen thay doi"
+                });
               
             }
             catch (Exception ex)
@@ -506,12 +517,14 @@ namespace demodoan1.Controllers
 
         }
         [HttpPost("testHeader", Name = "testHeader")]
-        public async Task<IActionResult> testHeader([FromHeader] string Authorization)
+      
+        public async Task<IActionResult> testHeader(string token)
         {
+            var role = TokenClass.DecodejwtForRoles(token);
             return Ok(new
             {
                 status = StatusCodes.Status200OK,
-                Authorization = Authorization
+                Authorization = role
             });
         }
     }
