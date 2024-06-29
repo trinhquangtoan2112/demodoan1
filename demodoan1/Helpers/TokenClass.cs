@@ -99,5 +99,13 @@ namespace demodoan1.Helpers
             string iDNguoiDung = claimsData["IdUserName"];
             return iDNguoiDung;
         }
+        public static string DecodejwtForRoles(string token)
+        {
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["role"];
+            return iDNguoiDung;
+        }
     }
 }
