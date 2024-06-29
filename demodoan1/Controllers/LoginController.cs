@@ -88,20 +88,30 @@ namespace demodoan1.Controllers
         {
             try
             {
-                user.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
-                var user1 = new User
+                var checkEmail = _appDbContext.Users.FirstOrDefault(item => item.Email == user.Email);
+                if(checkEmail == null)
                 {
+                    user.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
+                    var user1 = new User
+                    {
 
-                    MatKhau = user.MatKhau,
-                    Email = user.Email,
-                    MaQuyen = 1,
-                    TrangThai = false,
-                    DaXoa = false
+                        MatKhau = user.MatKhau,
+                        Email = user.Email,
+                        MaQuyen = 2,
+                        TrangThai = false,
+                        DaXoa = false
 
-                };
-                _appDbContext.Users.Add(user1);
-                await _appDbContext.SaveChangesAsync();
-                return Ok(new { Success = 200, data = user });
+                    };
+
+                    _appDbContext.Users.Add(user1);
+                    await _appDbContext.SaveChangesAsync();
+                    return Ok(new { Success = 200, data = user });
+                }
+                else
+                {
+                    return BadRequest(new { Success = StatusCodes.Status400BadRequest, data = "Email da ton tai" });
+                }
+              
             }
             catch (Exception ex)
             {
@@ -109,7 +119,7 @@ namespace demodoan1.Controllers
             }
         }
         [HttpPost("Login", Name = "Login")]
-        public async Task<IActionResult> Login([FromBody] UserDto user)
+        public async Task<IActionResult> Login([FromBody] UserDto user )
         {
             try
             {
@@ -412,6 +422,97 @@ namespace demodoan1.Controllers
                 return BadRequest(new { Success = 400, Message = ex.Message });
             }
         }
+        [HttpPut("CapNhapThongtinNguoiDung", Name = "CapNhapThongtinNguoiDung")]
 
+        public async Task<IActionResult> CapNhapThongtinNguoiDung([FromBody] AdduserDto adduser , string token)
+        {
+            try
+            {
+               string tokenData = TokenClass.Decodejwt(token);
+                var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData));
+                if(dataUser == null)
+                {
+                    return NotFound(new
+                    {
+                        success = StatusCodes.Status404NotFound,
+                        data = "Không tìm thấy"
+                    });
+                }
+                else
+                {
+                    dataUser.AnhDaiDien = adduser.AnhDaiDien !=null ? adduser.AnhDaiDien : dataUser.AnhDaiDien;
+                    dataUser.TenNguoiDung = adduser.TenNguoiDung != null ? adduser.TenNguoiDung : dataUser.TenNguoiDung;
+                    dataUser.GioiTinh = adduser.GioiTinh != null ? adduser.GioiTinh : dataUser.GioiTinh;
+                    dataUser.NgaySinh = adduser.NgaySinh != null ? adduser.NgaySinh : dataUser.NgaySinh;
+
+                    _appDbContext.Users.Update(dataUser);
+                    _appDbContext.SaveChanges();
+                    return Ok(new
+                    {
+                        success = StatusCodes.Status200OK,
+                        data = adduser,
+                        message ="Thành công"
+                    });
+                }
+              
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest( new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    data ="Lỗi"
+                });
+            }
+           
+        }
+        [HttpGet("SearchUser", Name = "SearchUser")]
+        public async Task<IActionResult> SearchUser(string search)
+        {
+            try
+            {
+         
+                var dataUser = _appDbContext.Users.Where(item => item.TenNguoiDung ==search || item.Email ==search).ToList();
+                if (dataUser.Count ==0)
+                {
+                    return NotFound(new
+                    {
+                        success = StatusCodes.Status404NotFound,
+                        data = "Không tìm thấy"
+                    });
+                }
+                else
+                {
+                   
+                    return Ok(new
+                    {
+                        success = StatusCodes.Status200OK,
+                        data = dataUser,
+                        message = "Thành công"
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    data = "Lỗi"
+                });
+            }
+
+        }
+        //[HttpPost("testHeader", Name = "testHeader")]
+        //public async Task<IActionResult> testHeader([FromHeader] string Authorization)
+        //{
+        //    return Ok(new
+        //    {
+        //        status = StatusCodes.Status200OK,
+        //        Authorization = Authorization
+        //    });
+        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using demodoan1.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -89,6 +90,14 @@ namespace demodoan1.Helpers
             json.Append("}");
             return claimsData;
 
+        }
+        public static  string Decodejwt(string token)
+        {
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+            return iDNguoiDung;
         }
     }
 }
