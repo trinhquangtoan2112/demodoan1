@@ -505,14 +505,14 @@ namespace demodoan1.Controllers
             }
 
         }
-        //[HttpPost("testHeader", Name = "testHeader")]
-        //public async Task<IActionResult> testHeader([FromHeader] string Authorization)
-        //{
-        //    return Ok(new
-        //    {
-        //        status = StatusCodes.Status200OK,
-        //        Authorization = Authorization
-        //    });
-        //}
+        [HttpPost("testHeader", Name = "testHeader")]
+        public async Task<IActionResult> testHeader([FromHeader] string Authorization)
+        {
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                Authorization = Authorization
+            });
+        }
     }
 }
