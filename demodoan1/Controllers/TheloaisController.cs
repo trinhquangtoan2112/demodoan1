@@ -104,7 +104,7 @@ namespace demodoan1.Controllers
             {
                 _context.Theloais.Add(theloai);
                 await _context.SaveChangesAsync();
-                return Ok(new { Success = 200, Data = theloai });
+                return Ok(new { Success = 200, Data = theloaiDto });
             }
             catch (Exception ex)
             {

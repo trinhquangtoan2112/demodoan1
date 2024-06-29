@@ -25,6 +25,8 @@ public partial class Chuongtruyen
 
     public int MaTruyen { get; set; }
 
+    public int? Stt { get; set; }
+       
     public virtual ICollection<Giaodich> Giaodiches { get; set; } = new List<Giaodich>();
 
     public virtual Truyen MaTruyenNavigation { get; set; } = null!;
