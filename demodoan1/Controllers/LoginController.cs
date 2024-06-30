@@ -413,5 +413,71 @@ namespace demodoan1.Controllers
             }
         }
 
+
+        // Thêm tài khoản bởi admin
+        [HttpPost("AddUserByAdmin", Name = "AddUserByAdmin")]
+        public async Task<IActionResult> AddUserByAdmin([FromBody] UserDto2 user)
+        {
+            try
+            {
+                // Kiểm tra xem email đã tồn tại trong cơ sở dữ liệu hay chưa
+                var existingUser = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+                if (existingUser != null)
+                {
+                    return BadRequest("Email đã tồn tại.");
+                }
+
+                user.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau);
+                var newUser = new User
+                {
+                    TenNguoiDung = user.TenNguoiDung,
+                    MatKhau = user.MatKhau,
+                    Email = user.Email,
+                    NgaySinh = user.NgaySinh,
+                    GioiTinh = user.GioiTinh,
+                    AnhDaiDien = user.AnhDaiDien,
+                    TrangThai = user.TrangThai,
+                    DaXoa = user.DaXoa,
+                    SoDeCu = user.SoDeCu,
+                    SoXu = user.SoXu,
+                    SoChiaKhoa = user.SoChiaKhoa,
+                    Vip = user.Vip,
+                    NgayHetHanVip = user.NgayHetHanVip,
+                    MaQuyen = user.MaQuyen,
+                };
+
+                _appDbContext.Users.Add(newUser);
+                await _appDbContext.SaveChangesAsync();
+                return Ok(new { Success = 200, data = newUser });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // Xóa tài khoản (đánh dấu đã xóa)
+        [HttpPut("XoaTaikhoan", Name = "XoaTaikhoan")]
+        public async Task<IActionResult> XoaTaikhoan([FromBody] string email)
+        {
+            try
+            {
+                var user = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                user.DaXoa = true;
+                await _appDbContext.SaveChangesAsync();
+                return Ok(new { Success = 200, message = "User marked as deleted" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
     }
 }
