@@ -105,11 +105,11 @@ namespace demodoan1.Controllers
 
                     _appDbContext.Users.Add(user1);
                     await _appDbContext.SaveChangesAsync();
-                    return Ok(new { Success = 200, data = user });
+                    return Ok(new { status = 200, data = user });
                 }
                 else
                 {
-                    return BadRequest(new { Success = StatusCodes.Status400BadRequest, data = "Email da ton tai" });
+                    return BadRequest(new { status = StatusCodes.Status400BadRequest, data = "Email da ton tai" });
                 }
               
             }
@@ -150,12 +150,12 @@ namespace demodoan1.Controllers
                         TenQuyen = taiKhoan.MaQuyenNavigation != null ? taiKhoan.MaQuyenNavigation.TenQuyen : null
 
                     };
-                    return Ok(new { Success = 200, data = responseData, token = GenerateJwtToken(taiKhoan) });
+                    return Ok(new { status = 200, data = responseData, token = GenerateJwtToken(taiKhoan) });
                 }
 
                 return NotFound(new
                 {
-                    Success = 404,
+                    status = 404,
                     message = "Not found"
                 });
             }
