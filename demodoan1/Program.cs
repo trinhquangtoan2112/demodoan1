@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Configuration;
 using System.Text;
+using demodoan1.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
