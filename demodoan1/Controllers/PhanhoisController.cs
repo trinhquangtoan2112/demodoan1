@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using demodoan1.Models;
+using demodoan1.Models.PhanhoiDto;
 
 namespace demodoan1.Controllers
 {
@@ -42,14 +41,22 @@ namespace demodoan1.Controllers
         }
 
         // PUT: api/Phanhois/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPhanhoi(int id, Phanhoi phanhoi)
+        public async Task<IActionResult> PutPhanhoi(int id, PhanhoiDto phanhoiDto)
         {
-            if (id != phanhoi.MaPhanHoi)
+            if (id != phanhoiDto.MaPhanHoi)
             {
                 return BadRequest();
             }
+
+            var phanhoi = new Phanhoi
+            {
+                MaPhanHoi = phanhoiDto.MaPhanHoi,
+                NoiDung = phanhoiDto.NoiDung,
+                TrangThai = phanhoiDto.TrangThai,
+                MaNguoiDung = phanhoiDto.MaNguoiDung,
+                Tieude = phanhoiDto.Tieude
+            };
 
             _context.Entry(phanhoi).State = EntityState.Modified;
 
@@ -73,10 +80,17 @@ namespace demodoan1.Controllers
         }
 
         // POST: api/Phanhois
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Phanhoi>> PostPhanhoi(Phanhoi phanhoi)
+        public async Task<ActionResult<Phanhoi>> PostPhanhoi(PhanhoiDto phanhoiDto)
         {
+            var phanhoi = new Phanhoi
+            {
+                NoiDung = phanhoiDto.NoiDung,
+                TrangThai = phanhoiDto.TrangThai,
+                MaNguoiDung = phanhoiDto.MaNguoiDung,
+                Tieude = phanhoiDto.Tieude
+            };
+
             _context.Phanhois.Add(phanhoi);
             await _context.SaveChangesAsync();
 

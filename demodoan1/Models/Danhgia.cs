@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace demodoan1.Models;
 
-public partial class Danhgium
+public partial class Danhgia
 {
     public int MaDanhGia { get; set; }
 
