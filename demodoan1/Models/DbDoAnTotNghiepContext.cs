@@ -48,8 +48,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-
-   
+  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -213,6 +212,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasColumnType("timestamp")
                 .HasColumnName("ngaytao");
             entity.Property(e => e.NoiDung).HasColumnName("noiDung");
+            entity.Property(e => e.Stt).HasColumnName("stt");
             entity.Property(e => e.TenChuong)
                 .HasMaxLength(50)
                 .HasColumnName("tenChuong")

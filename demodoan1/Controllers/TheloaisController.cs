@@ -79,13 +79,12 @@ namespace demodoan1.Controllers
             }
             catch (Exception ex)
             {
-                // Xử lý lỗi ở đây, ví dụ như ghi log lỗi, trả về lỗi cho client, vv.
+              
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "Lỗi khi cập nhật thể loại.", Exception = ex.Message });
             }
         }
 
-        // POST: api/Theloais
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    
         [HttpPost]
         public async Task<ActionResult> PostTheloai([FromBody] TheloaiDto theloaiDto)
         {
@@ -105,17 +104,16 @@ namespace demodoan1.Controllers
             {
                 _context.Theloais.Add(theloai);
                 await _context.SaveChangesAsync();
-                return Ok(new { Success = 200, Data = theloai });
+                return Ok(new { Success = 200, Data = theloaiDto });
             }
             catch (Exception ex)
             {
-                // Log the error (uncomment ex variable name and write a log.)
                 return StatusCode(500, new { Success = 500, Message = "An error occurred while saving the data.", Error = ex.Message });
             }
         }
 
 
-        // DELETE: api/Theloais/5
+      
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTheloai(int id)
         {
