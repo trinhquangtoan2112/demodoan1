@@ -2,7 +2,7 @@
 {
     public class AdduserDto
     {
-       
+       public int maNguoiDung {get; set;}
         public string? TenNguoiDung { get; set; }
 
         public DateTime? NgaySinh { get; set; }

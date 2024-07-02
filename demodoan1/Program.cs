@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Configuration;
 using System.Text;
+using demodoan1.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,26 +30,26 @@ builder.Services.AddDbContext<DbDoAnTotNghiepContext>(options =>
 builder.Services.Configure<AppSetting>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.AddAuthentication(options =>
 {
+    
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
-        //tu cap token
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        //ky vao token
+     ValidateIssuer=true,
+     ValidateAudience=true,
+        ValidIssuer = builder.Configuration["AppSettings:ValidIssuer"],
+        ValidAudience= builder.Configuration["AppSettings:ValidAudience"],
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        //ValidIssuer = builder.Configuration["AppSettings:SecretKey"],
-        //ValidAudience = builder.Configuration["audience"],
+       
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretKey"]))
     };
 });
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
 });
 var app = builder.Build();
 
@@ -61,7 +63,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
