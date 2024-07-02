@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Configuration;
 using System.Text;
+using demodoan1.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -137,7 +137,7 @@ namespace demodoan1.Controllers
                         NgayHetHanVip = taiKhoan.NgayHetHanVip,
                         NgayTao = taiKhoan.Ngaytao,
                         NgayCapNhap = taiKhoan.NgayCapNhap,
-                        TenQuyen = taiKhoan.MaQuyenNavigation != null ? taiKhoan.MaQuyenNavigation.TenQuyen : null
+                        MaQuyen = taiKhoan.MaQuyen
 
                     };
                     return Ok(new { Success = 200, data = responseData, token = GenerateJwtToken(taiKhoan) });
@@ -478,6 +478,66 @@ namespace demodoan1.Controllers
             }
         }
 
+        // Xóa tài khoản khỏi cơ sở dữ liệu theo ID
+        [HttpDelete("XoaTaikhoankhoidb", Name = "XoaTaikhoankhoidb")]
+        public async Task<IActionResult> XoaTaikhoankhoidb(long id)
+        {
+            try
+            {
+                var user = await _appDbContext.Users.FirstOrDefaultAsync(u => u.MaNguoiDung == id);
+                if (user == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+                }
 
+                _appDbContext.Users.Remove(user); // Xóa người dùng khỏi DbContext
+                await _appDbContext.SaveChangesAsync(); // Lưu thay đổi vào cơ sở dữ liệu
+
+                return Ok(new { Success = 200, message = "Người dùng đã được xóa khỏi cơ sở dữ liệu." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // Sửa thông tin tài khoản bởi admin dựa trên Email
+        [HttpPut("SuaTaikhoanByAdmin", Name = "SuaTaikhoanByAdmin")]
+        public async Task<IActionResult> SuaTaikhoanByAdmin([FromBody] UserDto2 user)
+        {
+            try
+            {
+                var existingUser = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+                if (existingUser == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+                }
+
+                // Cập nhật thông tin từ DTO vào người dùng hiện có
+                existingUser.TenNguoiDung = user.TenNguoiDung;
+                existingUser.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau); // Mã hóa lại mật khẩu nếu cần
+                existingUser.NgaySinh = user.NgaySinh;
+                existingUser.GioiTinh = user.GioiTinh;
+                existingUser.AnhDaiDien = user.AnhDaiDien;
+                existingUser.TrangThai = user.TrangThai;
+                existingUser.DaXoa = user.DaXoa;
+                existingUser.SoDeCu = user.SoDeCu;
+                existingUser.SoXu = user.SoXu;
+                existingUser.SoChiaKhoa = user.SoChiaKhoa;
+                existingUser.Vip = user.Vip;
+                existingUser.NgayHetHanVip = user.NgayHetHanVip;
+                existingUser.MaQuyen = user.MaQuyen;
+
+                _appDbContext.Users.Update(existingUser); // Cập nhật thông tin người dùng trong DbContext
+                await _appDbContext.SaveChangesAsync(); // Lưu thay đổi vào cơ sở dữ liệu
+
+                return Ok(new { Success = 200, data = user });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+    
     }
 }
