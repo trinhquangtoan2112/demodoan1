@@ -21,6 +21,7 @@ using static System.Net.WebRequestMethods;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Reflection.Metadata.Ecma335;
 
 namespace demodoan1.Controllers
 {
@@ -217,9 +218,9 @@ namespace demodoan1.Controllers
                 Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
                 string iDNguoiDung = claimsData["IdUserName"];
                 var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung));
-                if (dataUser.TrangThai == true)
+                if (dataUser?.TrangThai == true ||dataUser==null)
                 {
-                    return BadRequest(new { Success = 400, data = "Tai khoan da xac thuc" });
+                    return BadRequest(new { Success = 400, data = "Lỗi xảy ra" });
                 }
                 else
                 {
@@ -518,16 +519,15 @@ namespace demodoan1.Controllers
 
         // Xóa tài khoản (đánh dấu đã xóa)
         [HttpPut("XoaTaikhoan", Name = "XoaTaikhoan")]
-        public async Task<IActionResult> XoaTaikhoan([FromBody] string email)
+        public async Task<IActionResult> XoaTaikhoan([FromQuery] int id)
         {
             try
             {
-                var user = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+                var user = await _appDbContext.Users.FirstOrDefaultAsync(u => u.MaNguoiDung == id);
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
-
                 user.DaXoa = true;
                 await _appDbContext.SaveChangesAsync();
                 return Ok(new { Success = 200, message = "User marked as deleted" });
@@ -563,11 +563,11 @@ namespace demodoan1.Controllers
 
         // Sửa thông tin tài khoản bởi admin dựa trên Email
         [HttpPut("SuaTaikhoanByAdmin", Name = "SuaTaikhoanByAdmin")]
-        public async Task<IActionResult> SuaTaikhoanByAdmin([FromBody] UserDto2 user)
+        public async Task<IActionResult> SuaTaikhoanByAdmin([FromBody] CapNhapThongTinAdmin user, [FromQuery] int id)
         {
             try
             {
-                var existingUser = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+                var existingUser = await _appDbContext.Users.FirstOrDefaultAsync(u => u.MaNguoiDung ==id);
                 if (existingUser == null)
                 {
                     return NotFound("Người dùng không tồn tại.");
@@ -575,19 +575,13 @@ namespace demodoan1.Controllers
 
                 // Cập nhật thông tin từ DTO vào người dùng hiện có
                 existingUser.TenNguoiDung = user.TenNguoiDung;
-                existingUser.MatKhau = PasswordEncryptDecord.EncodePasswordToBase64(user.MatKhau); // Mã hóa lại mật khẩu nếu cần
                 existingUser.NgaySinh = user.NgaySinh;
                 existingUser.GioiTinh = user.GioiTinh;
-                existingUser.AnhDaiDien = user.AnhDaiDien;
-                existingUser.TrangThai = user.TrangThai;
-                existingUser.DaXoa = user.DaXoa;
                 existingUser.SoDeCu = user.SoDeCu;
                 existingUser.SoXu = user.SoXu;
                 existingUser.SoChiaKhoa = user.SoChiaKhoa;
                 existingUser.Vip = user.Vip;
                 existingUser.NgayHetHanVip = user.NgayHetHanVip;
-                existingUser.MaQuyen = user.MaQuyen;
-
                 _appDbContext.Users.Update(existingUser); // Cập nhật thông tin người dùng trong DbContext
                 await _appDbContext.SaveChangesAsync(); // Lưu thay đổi vào cơ sở dữ liệu
 
@@ -651,6 +645,7 @@ namespace demodoan1.Controllers
                 Authorization = role
             });
         }
+
         [HttpGet("updateInfo", Name = "updateInfo")]
 
         public async Task<IActionResult> updateInfo(string token)
@@ -697,6 +692,53 @@ namespace demodoan1.Controllers
                     data = "Khong tim thay"
                 });
             }
+        }
+
+        [HttpGet("GetThongTinCuThe",Name = "GetThongTinCuThe")]
+        public async Task<IActionResult> GetThongTinCuThe([FromQuery] string id)
+        {
+            try
+            {
+                var detailNguoiDung = await _appDbContext.Users.FirstOrDefaultAsync(item => item.MaNguoiDung == Int64.Parse(id));
+                if (detailNguoiDung == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+
+                }
+
+                var responseData = new CapNhapThongTinAdmin {
+                    TenNguoiDung = detailNguoiDung.TenNguoiDung,
+                   
+                    NgaySinh = detailNguoiDung.NgaySinh,
+                    GioiTinh = detailNguoiDung.GioiTinh,
+                    AnhDaiDien = detailNguoiDung.AnhDaiDien,
+                   
+                    DaXoa = detailNguoiDung.DaXoa,
+                    SoDeCu = detailNguoiDung.SoDeCu,
+                    SoXu = detailNguoiDung.SoXu,
+                    SoChiaKhoa = detailNguoiDung.SoChiaKhoa,
+                    Vip = detailNguoiDung.Vip,
+                    NgayHetHanVip = detailNguoiDung.NgayHetHanVip
+                };
+               
+
+
+
+
+
+
+                return Ok(new
+                {
+                    status = StatusCodes.Status200OK,
+                    data = responseData
+                });
+            }
+            catch(Exception ex)
+            {
+                return BadRequest("Lỗi");
+
+            }
+
         }
     }
 }
