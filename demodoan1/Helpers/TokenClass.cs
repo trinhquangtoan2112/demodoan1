@@ -69,6 +69,7 @@ namespace demodoan1.Helpers
         public static Dictionary<string, string> DecodeToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
+           
             var jsonToken = handler.ReadToken(token);
             var tokenS = jsonToken as JwtSecurityToken;
             var claims = tokenS.Claims;
