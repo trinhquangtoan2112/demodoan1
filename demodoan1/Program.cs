@@ -8,6 +8,9 @@ using Microsoft.OpenApi.Models;
 using System.Configuration;
 using System.Text;
 using demodoan1.Controllers;
+using demodoan1.Helpers.VnPayHelper;
+using CloudinaryDotNet;
+using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,7 @@ builder.Services.AddDbContext<DbDoAnTotNghiepContext>(options =>
 {
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
+builder.Services.AddScoped<IVnPayService, VnPayService>(); 
 builder.Services.Configure<AppSetting>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.AddAuthentication(options =>
 {

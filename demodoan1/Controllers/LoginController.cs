@@ -22,6 +22,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Reflection.Metadata.Ecma335;
+using CloudinaryDotNet.Actions;
+using CloudinaryDotNet;
+using demodoan1.Models.TruyenDto;
 
 namespace demodoan1.Controllers
 {
@@ -32,10 +35,17 @@ namespace demodoan1.Controllers
 
         public readonly DbDoAnTotNghiepContext _appDbContext;
         private readonly AppSetting _appSetting;
+        private readonly Cloudinary _cloudinary;
         public LoginController(DbDoAnTotNghiepContext appDbContext, IOptions<AppSetting> appSetting)
         {
             _appDbContext = appDbContext;
             _appSetting = appSetting.Value;
+            Account account = new Account(
+          "dzayfqach", // Replace with your Cloudinary cloud name
+          "652647132213558",    // Replace with your Cloudinary API key
+          "B1RZWapNbinaEjPUvg3K52VWiHo"  // Replace with your Cloudinary API secret
+      );
+            _cloudinary = new Cloudinary(account);
         }
         //[HttpGet]
         //public async Task<IActionResult> Index()
@@ -430,7 +440,7 @@ namespace demodoan1.Controllers
         }
         [HttpPut("CapNhapThongtinNguoiDung", Name = "CapNhapThongtinNguoiDung")]
 
-        public async Task<IActionResult> CapNhapThongtinNguoiDung([FromBody] AdduserDto adduser, string token)
+        public async Task<IActionResult> CapNhapThongtinNguoiDung([FromForm] AdduserDto adduser, string token)
         {
             try
             {
@@ -448,7 +458,21 @@ namespace demodoan1.Controllers
                     }
                     else
                     {
-                        dataUser.AnhDaiDien = adduser.AnhDaiDien != null ? adduser.AnhDaiDien : dataUser.AnhDaiDien;
+                        string linkAnh;
+                        using (var stream = adduser.AnhDaiDien.OpenReadStream())
+                        {
+                            var uploadParams = new ImageUploadParams()
+                            {
+                                File = new FileDescription(adduser.AnhDaiDien.FileName, stream),
+                                UseFilename = true,
+                                UniqueFilename = true,
+                                Overwrite = true
+                            };
+                            var uploadResult = _cloudinary.Upload(uploadParams);
+                            linkAnh = uploadResult.Url.ToString();
+                        }
+
+                        dataUser.AnhDaiDien = linkAnh != null ? linkAnh : dataUser.AnhDaiDien;
                         dataUser.TenNguoiDung = adduser.TenNguoiDung != null ? adduser.TenNguoiDung : dataUser.TenNguoiDung;
                         dataUser.GioiTinh = adduser.GioiTinh != null ? adduser.GioiTinh : dataUser.GioiTinh;
                         dataUser.NgaySinh = adduser.NgaySinh != null ? adduser.NgaySinh : dataUser.NgaySinh;

@@ -1,4 +1,6 @@
-﻿using demodoan1.Models;
+﻿using CloudinaryDotNet.Actions;
+using CloudinaryDotNet;
+using demodoan1.Models;
 using demodoan1.Models.TruyenDto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +14,18 @@ namespace demodoan1.Controllers
     [ApiController]
     public class TruyensController : ControllerBase
     {
+        private readonly Cloudinary _cloudinary;
         private readonly DbDoAnTotNghiepContext _context;
 
         public TruyensController(DbDoAnTotNghiepContext context)
         {
             _context = context;
+            Account account = new Account(
+           "dzayfqach", // Replace with your Cloudinary cloud name
+           "652647132213558",    // Replace with your Cloudinary API key
+           "B1RZWapNbinaEjPUvg3K52VWiHo"  // Replace with your Cloudinary API secret
+       );
+            _cloudinary = new Cloudinary(account);
         }
 
         // GET: api/Truyens
@@ -43,7 +52,7 @@ namespace demodoan1.Controllers
         // PUT: api/Truyens/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTruyen(int id, TruyenDto truyenDto)
+        public async Task<IActionResult> PutTruyen(int id, Truyen truyenDto)
         {
             if (id != truyenDto.MaTruyen)
             {
@@ -86,23 +95,50 @@ namespace demodoan1.Controllers
         // POST: api/Truyens
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Truyen>> PostTruyen(TruyenDto truyenDto)
+        public async Task<ActionResult<Truyen>> PostTruyen([FromForm] TruyenDto truyenDto)
         {
-            var truyen = new Truyen
+            try
             {
-                TenTruyen = truyenDto.TenTruyen,
-                MoTa = truyenDto.MoTa,
-                AnhBia = truyenDto.AnhBia,
-                CongBo = truyenDto.CongBo,
-                TrangThai = truyenDto.TrangThai,
-                MaButDanh = truyenDto.MaButDanh,
-                MaTheLoai = truyenDto.MaTheLoai
-            };
 
-            _context.Truyens.Add(truyen);
-            await _context.SaveChangesAsync();
+                var dataTruyen = _context.Truyens.FirstOrDefault(item => item.TenTruyen == truyenDto.TenTruyen);
+                if (dataTruyen == null)
+                {
+                    string linkTruyen;
+                    using (var stream = truyenDto.AnhBia.OpenReadStream())
+                    {
+                        var uploadParams = new ImageUploadParams()
+                        {
+                            File = new FileDescription(truyenDto.TenTruyen, stream),
+                            UseFilename = true,
+                            UniqueFilename = true,
+                            Overwrite = true
+                        };
+                        var uploadResult = _cloudinary.Upload(uploadParams);
+                        linkTruyen = uploadResult.Url.ToString();
+                    }
+                    var truyen = new Truyen
+                    {
+                        TenTruyen = truyenDto.TenTruyen,
+                        MoTa = truyenDto.MoTa,
+                        AnhBia = linkTruyen,
+                        CongBo =0,
+                        TrangThai = 0,
+                        MaButDanh = truyenDto.MaButDanh,
+                        MaTheLoai = truyenDto.MaTheLoai
+                    };
 
-            return CreatedAtAction("GetTruyen", new { id = truyen.MaTruyen }, truyen);
+                    _context.Truyens.Add(truyen);
+                    await _context.SaveChangesAsync();
+
+                    return Created("TaoTruyen", new { status = StatusCodes.Status201Created, data = truyen });
+                }
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, data = truyenDto });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, data = truyenDto });
+            }
+            
         }
 
         // DELETE: api/Truyens/5
