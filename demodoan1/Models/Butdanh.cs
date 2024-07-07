@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.EntityFrameworkCore;
-using demodoan1.Models;
 
 namespace demodoan1.Models;
 
@@ -25,4 +21,3 @@ public partial class Butdanh
 
     public virtual ICollection<Truyen> Truyens { get; set; } = new List<Truyen>();
 }
-

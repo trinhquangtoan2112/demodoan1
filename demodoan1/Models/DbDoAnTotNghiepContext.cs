@@ -28,7 +28,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<Danhdau> Danhdaus { get; set; }
 
-    public virtual DbSet<Danhgia> Danhgia { get; set; }
+    public virtual DbSet<Danhgium> Danhgia { get; set; }
 
     public virtual DbSet<Giaodich> Giaodiches { get; set; }
 
@@ -254,7 +254,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasConstraintName("FK_danhdau_Truyen");
         });
 
-        modelBuilder.Entity<Danhgia>(entity =>
+        modelBuilder.Entity<Danhgium>(entity =>
         {
             entity.HasKey(e => e.MaDanhGia).HasName("PRIMARY");
 

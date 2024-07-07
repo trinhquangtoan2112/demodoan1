@@ -458,19 +458,23 @@ namespace demodoan1.Controllers
                     }
                     else
                     {
-                        string linkAnh;
-                        using (var stream = adduser.AnhDaiDien.OpenReadStream())
+                        string linkAnh =null;
+                        if(adduser.AnhDaiDien != null)
                         {
-                            var uploadParams = new ImageUploadParams()
+                            using (var stream = adduser.AnhDaiDien.OpenReadStream())
                             {
-                                File = new FileDescription(adduser.AnhDaiDien.FileName, stream),
-                                UseFilename = true,
-                                UniqueFilename = true,
-                                Overwrite = true
-                            };
-                            var uploadResult = _cloudinary.Upload(uploadParams);
-                            linkAnh = uploadResult.Url.ToString();
+                                var uploadParams = new ImageUploadParams()
+                                {
+                                    File = new FileDescription(adduser.AnhDaiDien.FileName, stream),
+                                    UseFilename = true,
+                                    UniqueFilename = true,
+                                    Overwrite = true
+                                };
+                                var uploadResult = _cloudinary.Upload(uploadParams);
+                                linkAnh = uploadResult.Url.ToString();
+                            }
                         }
+                        
 
                         dataUser.AnhDaiDien = linkAnh != null ? linkAnh : dataUser.AnhDaiDien;
                         dataUser.TenNguoiDung = adduser.TenNguoiDung != null ? adduser.TenNguoiDung : dataUser.TenNguoiDung;

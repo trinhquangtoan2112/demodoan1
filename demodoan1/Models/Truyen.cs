@@ -33,7 +33,7 @@ public partial class Truyen
 
     public virtual ICollection<Danhdau> Danhdaus { get; set; } = new List<Danhdau>();
 
-    public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
+    public virtual ICollection<Danhgium> Danhgia { get; set; } = new List<Danhgium>();
 
     public virtual ICollection<Lichsudoc> Lichsudocs { get; set; } = new List<Lichsudoc>();
 
