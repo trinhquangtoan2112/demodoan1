@@ -45,10 +45,9 @@ namespace demodoan1.Controllers
                 Machuongtruyen = u.MaChuong,
                 TenChuong = u.TenChuong,
                 TrangThai = u.TrangThai,
-                NoiDung = u.NoiDung,
+                Luotdoc =u.LuotDoc,
                 HienThi = u.HienThi,
                 GiaChuong = u.GiaChuong,
-                LuotDoc =u.LuotDoc,
                 Stt =u.Stt,
                 NgayTao = u.Ngaytao,
                 NgayCapNhat = u.NgayCapNhap,
@@ -139,37 +138,50 @@ namespace demodoan1.Controllers
             {
                 return BadRequest();
             }
-            
-
-           
-
-            
         }
 
         // PUT: api/Chuongtruyens/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<ActionResult> PutChuongtruyen(int id, ChuongtruyenDto chuongtruyenDto)
+        [HttpPut("CapNhapChuongTruyen")]
+        public async Task<ActionResult> PutChuongtruyen(int id,[FromBody] ChuongtruyenCapNhapDto chuongtruyen)
         {
-          
-
-            try
+            var thongTin = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == id);
+            if(thongTin == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
+            else
             {
-                if (!ChuongtruyenExists(id))
+                try
                 {
-                    return NotFound();
+                    if(!_context.Chuongtruyens.Any(item =>item.MaTruyen == thongTin.MaTruyen && item.Stt == chuongtruyen.Stt))
+                    {
+                        thongTin.TenChuong = chuongtruyen.TenChuong;
+                        thongTin.NoiDung = chuongtruyen.NoiDung;
+                        thongTin.GiaChuong = chuongtruyen.GiaChuong;
+                        thongTin.HienThi = chuongtruyen.HienThi;
+                        thongTin.TrangThai = chuongtruyen.TrangThai;
+                        thongTin.Stt = chuongtruyen.Stt;
+                        _context.Update(thongTin);
+                        await _context.SaveChangesAsync();
+                        return Ok(new { Status = StatusCodes.Status200OK, data = chuongtruyen });
+                    }
+                    else
+                    {
+                      return  BadRequest(new { message = "Stt can khac voi cac chuong khac" });
+                    }
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
-                    throw;
+
+                    return BadRequest();
                 }
+
+             
             }
 
-            return NoContent();
+
+           
         }
 
         // POST: api/Chuongtruyens
@@ -214,7 +226,7 @@ namespace demodoan1.Controllers
         }
 
         // DELETE: api/Chuongtruyens/5
-        [HttpDelete("{id}")]
+        [HttpDelete("XoaChuongTruyen")]
         public async Task<IActionResult> DeleteChuongtruyen(int id)
         {
             var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
@@ -222,13 +234,90 @@ namespace demodoan1.Controllers
             {
                 return NotFound();
             }
-
-            _context.Chuongtruyens.Remove(chuongtruyen);
+            chuongtruyen.TrangThai = 3;
+            _context.Chuongtruyens.Update(chuongtruyen);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new
+            {
+                status = StatusCodes.Status204NoContent,
+                message = "Xoa thanh cong"
+            });
         }
+        [HttpPut("AnChuongTruyen")]
+        public async Task<IActionResult> AnChuongTruyen(int id)
+        {
+            var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
+            if (chuongtruyen == null)
+            {
+                return NotFound();
+            }
+            chuongtruyen.HienThi = 0;
+            _context.Chuongtruyens.Update(chuongtruyen);
+            await _context.SaveChangesAsync();
 
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message ="An thanh cong"
+            });
+        }
+        [HttpGet("timkiemchuong", Name = "timkiemchuong")]
+        public async Task<ActionResult> GetTruyen(string? tenChuong,int? maTruyen)
+        {
+            IQueryable<Chuongtruyen> query = _context.Chuongtruyens
+                                              .Where(u => u.TrangThai != 3  && u.MaTruyen == maTruyen);
+
+            if (!string.IsNullOrEmpty(tenChuong))
+            {
+                query = query.Where(u => u.TenChuong.Contains(tenChuong));
+            }
+
+            if (maTruyen.HasValue)
+            {
+                query = query.Where(u => u.MaTruyen == maTruyen);
+            }
+
+            var taiKhoan = await query.ToListAsync();
+
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var responseData = taiKhoan.Select(u => new
+            {
+                MaChuongTruyen = u.MaChuong,
+                TenChuongTruyen = u.TenChuong,
+                TrangThai = u.TrangThai,
+                HienThi = u.HienThi,
+                GiaChuong = u.GiaChuong,
+                LuotDoc = u.LuotDoc,
+                NgayTao = u.Ngaytao,
+                NgayCapNhat = u.NgayCapNhap,
+                stt = u.Stt
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+        }
+        [HttpPost("Themluotdoc")]
+        public async Task<IActionResult> ThemLuotDoc(int id)
+        {
+            var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
+            if (chuongtruyen == null)
+            {
+                return NotFound();
+            }
+            chuongtruyen.LuotDoc += 1;
+            _context.Chuongtruyens.Update(chuongtruyen);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
         private bool ChuongtruyenExists(int id)
         {
             return _context.Chuongtruyens.Any(e => e.MaChuong == id);

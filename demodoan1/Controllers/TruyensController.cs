@@ -35,7 +35,7 @@ namespace demodoan1.Controllers
         public async Task<ActionResult> GetTruyens()
         {
           
-            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).ToListAsync();
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).ToListAsync();
             if(taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -49,6 +49,7 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0)?true:false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
                 TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
