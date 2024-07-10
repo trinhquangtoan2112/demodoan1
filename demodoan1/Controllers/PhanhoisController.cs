@@ -21,16 +21,45 @@ namespace demodoan1.Controllers
 
         // GET: api/Phanhois
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Phanhoi>>> GetPhanhois()
+        public async Task<ActionResult<IEnumerable<PhanhoiDto>>> GetPhanhois()
         {
-            return await _context.Phanhois.ToListAsync();
+            var phanhois = await _context.Phanhois
+                .Select(p => new PhanhoiDto
+                {
+                    MaPhanHoi = p.MaPhanHoi,
+                    Tieude = p.Tieude,
+                    NoiDung = p.NoiDung,
+                    TrangThai = p.TrangThai,
+                    Ngaytao = p.Ngaytao,
+                    EmailNguoiDung = _context.Users
+                        .Where(n => n.MaNguoiDung == p.MaNguoiDung)
+                        .Select(n => n.Email)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return phanhois;
         }
 
         // GET: api/Phanhois/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Phanhoi>> GetPhanhoi(int id)
+        public async Task<ActionResult<PhanhoiDto>> GetPhanhoi(int id)
         {
-            var phanhoi = await _context.Phanhois.FindAsync(id);
+            var phanhoi = await _context.Phanhois
+                .Where(p => p.MaPhanHoi == id)
+                .Select(p => new PhanhoiDto
+                {
+                    MaPhanHoi = p.MaPhanHoi,
+                    Tieude = p.Tieude,
+                    NoiDung = p.NoiDung,
+                    TrangThai = p.TrangThai,
+                    Ngaytao = p.Ngaytao,
+                    EmailNguoiDung = _context.Users
+                        .Where(n => n.MaNguoiDung == p.MaNguoiDung)
+                        .Select(n => n.Email)
+                        .FirstOrDefault()
+                })
+                .FirstOrDefaultAsync();
 
             if (phanhoi == null)
             {
@@ -42,42 +71,34 @@ namespace demodoan1.Controllers
 
         // PUT: api/Phanhois/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPhanhoi(int id, PhanhoiDto phanhoiDto)
+        public async Task<IActionResult> PutPhanhoi(int id, [FromBody] PhanhoiDto phanhoiDto)
         {
             if (id != phanhoiDto.MaPhanHoi)
             {
                 return BadRequest();
             }
 
-            var phanhoi = new Phanhoi
-            {
-                MaPhanHoi = phanhoiDto.MaPhanHoi,
-                NoiDung = phanhoiDto.NoiDung,
-                TrangThai = phanhoiDto.TrangThai,
-                MaNguoiDung = phanhoiDto.MaNguoiDung,
-                Tieude = phanhoiDto.Tieude
-            };
-
-            _context.Entry(phanhoi).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PhanhoiExists(id))
+                var phanhoi = await _context.Phanhois.FindAsync(id);
+
+                if (phanhoi == null)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                phanhoi.TrangThai = phanhoiDto.TrangThai;
+
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Lỗi xảy ra khi cập nhật phản hồi: {ex.Message}");
+            }
         }
+
 
         // POST: api/Phanhois
         [HttpPost]
