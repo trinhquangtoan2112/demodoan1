@@ -9,7 +9,7 @@
 
         public string? GioiTinh { get; set; }
 
-        public string? AnhDaiDien { get; set; }
+        public IFormFile? AnhDaiDien { get; set; }
 
     }
 }
