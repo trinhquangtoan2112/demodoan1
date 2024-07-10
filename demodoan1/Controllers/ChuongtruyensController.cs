@@ -9,6 +9,7 @@ using demodoan1.Models;
 using demodoan1.Models.ChuongtruyenDto;
 using demodoan1.Models.TruyenDto;
 using demodoan1.Helpers;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace demodoan1.Controllers
 {
@@ -81,6 +82,17 @@ namespace demodoan1.Controllers
                 {
                     var hasNextChapter = await _context.Chuongtruyens
         .AnyAsync(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt);
+                 
+
+                    var previousChapter = await _context.Chuongtruyens
+                        .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt < currentChapter.Stt)
+                        .OrderByDescending(c => c.Stt)
+                        .FirstOrDefaultAsync();
+
+                    var nextChapter = await _context.Chuongtruyens
+                        .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt)
+                        .OrderBy(c => c.Stt)
+                        .FirstOrDefaultAsync();
                     if (currentChapter.GiaChuong == 0)
                     {
                         var responseData = new
@@ -95,20 +107,34 @@ namespace demodoan1.Controllers
                             Stt = currentChapter.Stt,
                             NgayTao = currentChapter.Ngaytao,
                             NgayCapNhat = currentChapter.NgayCapNhap,
-                            trangTiep = hasNextChapter
+                            trangTruoc = previousChapter?.MaChuong,
+                            trangTiep = nextChapter?.MaChuong
                         };
                         return Ok(new { StatusCode = StatusCodes.Status200OK, data = responseData });
                     }
                     else
                     {
                         string tokenData = null;
+                        var responseData1 = new
+                        {
+
+
+                            trangTruoc = previousChapter?.MaChuong,
+                            trangTiep = nextChapter?.MaChuong
+                        };
                         if (!string.IsNullOrEmpty(token))
                         {
                             tokenData = TokenClass.Decodejwt(token);
                             Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData)) : false;
+                          
                             if (!daMua)
                             {
-                                return Unauthorized();
+                            
+                                return Unauthorized(new
+                                {
+                                    Status = StatusCodes.Status401Unauthorized,
+                                    data = responseData1
+                                });
                             }
                             var responseData = new
                             {
@@ -122,15 +148,23 @@ namespace demodoan1.Controllers
                                 Stt = currentChapter.Stt,
                                 NgayTao = currentChapter.Ngaytao,
                                 NgayCapNhat = currentChapter.NgayCapNhap,
-                                trangTiep = hasNextChapter
+                              
+                                  trangTruoc = previousChapter?.MaChuong,
+                                trangTiep = nextChapter?.MaChuong
                             };
                             return Ok(new
                             {
-                                StatusCodes.Status200OK,
-                                Ddata = responseData
+                                Status =StatusCodes.Status200OK,
+                               data = responseData
                             });
                         }
-                        return Unauthorized();
+                     
+                        return Unauthorized(new
+                        {
+                            Status = StatusCodes.Status401Unauthorized,
+                            data = responseData1
+                        });
+
                     }
                 }
             }
