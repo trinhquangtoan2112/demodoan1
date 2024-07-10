@@ -11,5 +11,9 @@
         public int MaNguoiDung { get; set; }
 
         public string? Tieude { get; set; }
+
+        public string? EmailNguoiDung { get; set; } // Thêm trường này
+
+        public DateTime? Ngaytao { get; set; }
     }
 }
