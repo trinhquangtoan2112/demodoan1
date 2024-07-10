@@ -1,4 +1,5 @@
-﻿using demodoan1.Models;
+﻿using demodoan1.Helpers;
+using demodoan1.Models;
 using demodoan1.Models.ButdanhDto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,91 +28,114 @@ namespace demodoan1.Controllers
         }
 
         // GET: api/Butdanhs/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Butdanh>> GetButdanh(int id)
+        [HttpGet("DanhSachButDanhTheoNguoiDung")]
+        public async Task<ActionResult<Butdanh>> GetButdanh(String token )
         {
-            var butdanh = await _context.Butdanhs.FindAsync(id);
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+            var danhSachButDanh = _context.Butdanhs.Where(item =>item.MaNguoiDung ==Int64.Parse(iDNguoiDung)).ToList();
 
-            if (butdanh == null)
+            if (danhSachButDanh == null)
             {
                 return NotFound();
             }
 
-            return butdanh;
+            return Ok(new {status = StatusCodes.Status200OK, data= danhSachButDanh });
         }
 
         // PUT: api/Butdanhs/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutButdanh(int id, ButdanhDto butdanhDto)
+        [HttpPut("SuaButDanh")]
+        public async Task<IActionResult> PutButdanh([FromBody] SuaButdanhDto butdanhDto, [FromQuery] string token)
         {
-            if (id != butdanhDto.MaButDanh)
-            {
-                return BadRequest();
-            }
-
-            var butdanh = new Butdanh
-            {
-                MaButDanh = butdanhDto.MaButDanh,
-                TenButDanh = butdanhDto.TenButDanh,
-                MaNguoiDung = butdanhDto.MaNguoiDung,
-                Trangthai = butdanhDto.Trangthai
-            };
-
-            _context.Entry(butdanh).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ButdanhExists(id))
+               
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                var checkTonTai = _context.Butdanhs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung) && item.MaButDanh == butdanhDto.MaButDanh);
+                if (checkTonTai == null)
                 {
-                    return NotFound();
+                    return Unauthorized(new {status =StatusCodes.Status401Unauthorized, message = "Không Có quyền" });
                 }
-                else
-                {
-                    throw;
-                }
-            }
+                checkTonTai.TenButDanh = butdanhDto.TenButDanh;
 
-            return NoContent();
+                _context.Butdanhs.Update(checkTonTai);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { status = StatusCodes.Status201Created, data = butdanhDto });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = "lỗi" });
+            }
         }
 
         // POST: api/Butdanhs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Butdanh>> PostButdanh(ButdanhDto butdanhDto)
+        [HttpPost("Thembutdanh")]
+        public async Task<ActionResult<Butdanh>> PostButdanh([FromBody] ButdanhDto butdanhDto, [FromQuery] string token)
         {
-            var butdanh = new Butdanh
+            try
             {
-                MaButDanh = butdanhDto.MaButDanh,
-                TenButDanh = butdanhDto.TenButDanh,
-                MaNguoiDung = butdanhDto.MaNguoiDung,
-                Trangthai = butdanhDto.Trangthai
-            };
+                Boolean daCo = _context.Butdanhs.Any(item => item.TenButDanh.Equals(butdanhDto.TenButDanh));
+                if(daCo)
+                     return BadRequest(new { status = StatusCodes.Status400BadRequest,message ="Đã tồn tại" });
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                var butdanh = new Butdanh
+                {
 
-            _context.Butdanhs.Add(butdanh);
-            await _context.SaveChangesAsync();
+                    TenButDanh = butdanhDto.TenButDanh,
+                    MaNguoiDung = (int)Int64.Parse(iDNguoiDung),
+                    Trangthai = 0
+                };
 
-            return CreatedAtAction("GetButdanh", new { id = butdanh.MaButDanh }, butdanh);
+                _context.Butdanhs.Add(butdanh);
+                await _context.SaveChangesAsync();
+
+                return Ok( new { status = StatusCodes.Status201Created,data = butdanhDto } );
+            }
+            catch (Exception ex)
+            {
+                return BadRequest( new { status = StatusCodes.Status400BadRequest, message ="lỗi" });
+            }
+           
         }
 
         // DELETE: api/Butdanhs/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteButdanh(int id)
+        [HttpDelete("XoaButDanh")]
+        public async Task<IActionResult> DeleteButdanh([FromBody] ButdanhDtoKhoa butdanhdto, string token)
         {
-            var butdanh = await _context.Butdanhs.FindAsync(id);
-            if (butdanh == null)
+            try
             {
-                return NotFound();
+
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                var checkTonTai = _context.Butdanhs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung) && item.MaButDanh == butdanhdto.MaButDanh);
+                if (checkTonTai == null)
+                {
+                    return Unauthorized(new { status = StatusCodes.Status401Unauthorized, message = "Không Có quyền" });
+                }
+                checkTonTai.Trangthai = 1;
+
+                _context.Butdanhs.Update(checkTonTai);
+                await _context.SaveChangesAsync();
+
+                return Accepted(new { status = StatusCodes.Status202Accepted, message = "Thành công" });
             }
-
-            _context.Butdanhs.Remove(butdanh);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = "lỗi" });
+            }
         }
 
         private bool ButdanhExists(int id)
