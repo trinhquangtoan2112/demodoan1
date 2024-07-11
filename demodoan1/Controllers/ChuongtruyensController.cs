@@ -184,26 +184,22 @@ namespace demodoan1.Controllers
             {
                 return NotFound();
             }
+
             else
             {
                 try
                 {
-                    if(!_context.Chuongtruyens.Any(item =>item.MaTruyen == thongTin.MaTruyen && item.Stt == chuongtruyen.Stt))
-                    {
-                        thongTin.TenChuong = chuongtruyen.TenChuong;
+                 
+                
+                    thongTin.TenChuong = chuongtruyen.TenChuong;
                         thongTin.NoiDung = chuongtruyen.NoiDung;
-                        thongTin.GiaChuong = chuongtruyen.GiaChuong;
-                        thongTin.HienThi = chuongtruyen.HienThi;
-                        thongTin.TrangThai = chuongtruyen.TrangThai;
-                        thongTin.Stt = chuongtruyen.Stt;
+                       
+                       
                         _context.Update(thongTin);
                         await _context.SaveChangesAsync();
                         return Ok(new { Status = StatusCodes.Status200OK, data = chuongtruyen });
-                    }
-                    else
-                    {
-                      return  BadRequest(new { message = "Stt can khac voi cac chuong khac" });
-                    }
+                    
+                   
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -235,7 +231,7 @@ namespace demodoan1.Controllers
                     TrangThai = 1,
                     NoiDung = chuongtruyenDto.NoiDung,
                     HienThi = 1,
-                    GiaChuong = chuongtruyenDto.GiaChuong,
+                    GiaChuong = 0,
                     LuotDoc = 0,
                     MaTruyen = chuongtruyenDto.MaTruyen,
                     Stt = maxStt + 1
@@ -249,7 +245,7 @@ namespace demodoan1.Controllers
                     Message = "Thêm chương truyện mới",
                     Data = chuongtruyenDto
                 };
-                return Created("Them truyen thành công", response);
+                return Created("TaoChuong", new { status = StatusCodes.Status201Created, data = response });
             }
             catch(Exception ex)
             {
