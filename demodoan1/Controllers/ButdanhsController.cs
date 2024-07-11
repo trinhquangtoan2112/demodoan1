@@ -138,6 +138,116 @@ namespace demodoan1.Controllers
             }
         }
 
+        // GET: api/Butdanhs/laybutdanhcuaadmin
+        [HttpGet("laybutdanhcuaadmin")]
+        public async Task<ActionResult<IEnumerable<LayButDanhAdminDto>>> GetButDanhCuaAdmin()
+        {
+            try
+            {
+                var danhSachButDanh = await _context.Butdanhs
+                    .Select(bd => new LayButDanhAdminDto
+                    {
+                        MaButDanh = bd.MaButDanh,
+                        TenButDanh = bd.TenButDanh,
+                        EmailNguoiDung = _context.Users
+                        .Where(n => n.MaNguoiDung == bd.MaNguoiDung)
+                        .Select(n => n.Email)
+                        .FirstOrDefault(),
+                        Trangthai = bd.Trangthai,
+                        Ngaytao = bd.Ngaytao,
+                        SoLuongTruyen = _context.Truyens.Count(t => t.MaButDanh == bd.MaButDanh)
+                    })
+                    .ToListAsync();
+
+                if (danhSachButDanh == null || !danhSachButDanh.Any())
+                {
+                    return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy bút danh nào" });
+                }
+
+                return Ok(new { status = StatusCodes.Status200OK, data = danhSachButDanh });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = ex.Message });
+            }
+        }
+
+        [HttpPut("KhoaButDanh")]
+        public async Task<IActionResult> KhoaButDanh([FromBody] ButdanhDtoKhoa butdanhDtoKhoa, [FromQuery] string token)
+        {
+            try
+            {
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+
+                // Kiểm tra quyền của người dùng
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.MaNguoiDung == Int64.Parse(iDNguoiDung));
+                if (user == null || user.MaQuyen != 1) // Không có quyền hoặc không phải admin
+                {
+                    return Unauthorized(new { status = StatusCodes.Status401Unauthorized, message = "Không có quyền" });
+                }
+
+                // Tìm bút danh để khóa
+                var butDanh = await _context.Butdanhs.FirstOrDefaultAsync(bd => bd.MaButDanh == butdanhDtoKhoa.MaButDanh);
+                if (butDanh == null)
+                {
+                    return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy bút danh" });
+                }
+
+                // Cập nhật trạng thái bút danh
+                butDanh.Trangthai = 1; // Khóa
+
+                _context.Butdanhs.Update(butDanh);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { status = StatusCodes.Status200OK, message = "Khóa bút danh thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = ex.Message });
+            }
+        }
+
+        // DELETE: api/Butdanhs/XoaButDanhCuaAdmin
+        [HttpDelete("XoaButDanhCuaAdmin")]
+        public async Task<IActionResult> XoaButDanhCuaAdmin([FromBody] ButdanhDtoKhoa butdanhDtoKhoa, [FromQuery] string token)
+        {
+            try
+            {
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+
+                // Kiểm tra quyền của người dùng
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.MaNguoiDung == Int64.Parse(iDNguoiDung));
+                if (user == null || user.MaQuyen != 1) // Không có quyền hoặc không phải admin
+                {
+                    return Unauthorized(new { status = StatusCodes.Status401Unauthorized, message = "Không có quyền" });
+                }
+
+                // Tìm bút danh để xóa
+                var butDanh = await _context.Butdanhs.FirstOrDefaultAsync(bd => bd.MaButDanh == butdanhDtoKhoa.MaButDanh);
+                if (butDanh == null)
+                {
+                    return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy bút danh" });
+                }
+
+                // Xóa bút danh khỏi danh sách
+                _context.Butdanhs.Remove(butDanh);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { status = StatusCodes.Status200OK, message = "Xóa bút danh thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = ex.Message });
+            }
+        }
+
+
         private bool ButdanhExists(int id)
         {
             return _context.Butdanhs.Any(e => e.MaButDanh == id);
