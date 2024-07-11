@@ -7,12 +7,10 @@
     public class ButdanhDtoKhoa
     {
         public int MaButDanh { get; set; }
-      
     }
     public class SuaButdanhDto
     {
         public int MaButDanh { get; set; }
-
         public string? TenButDanh { get; set; }
     }
 }
