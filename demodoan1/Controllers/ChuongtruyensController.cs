@@ -245,7 +245,7 @@ namespace demodoan1.Controllers
                     Message = "Thêm chương truyện mới",
                     Data = chuongtruyenDto
                 };
-                return Created("TaoChuong", new { status = StatusCodes.Status201Created, data = response });
+                return Created("Themtruyen", response);
             }
             catch(Exception ex)
             {
