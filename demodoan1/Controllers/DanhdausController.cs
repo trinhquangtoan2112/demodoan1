@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using demodoan1.Models;
 using demodoan1.Models.DanhdauDto;
+using demodoan1.Helpers;
+using NuGet.Common;
+using MySqlX.XDevAPI.Common;
+using demodoan1.Models.ButdanhDto;
 
 namespace demodoan1.Controllers
 {
@@ -21,71 +25,95 @@ namespace demodoan1.Controllers
 
         // GET: api/Danhdaus
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Danhdau>>> GetDanhdaus()
+        public async Task<ActionResult<IEnumerable<DanhdauDto>>> GetDanhdaus(string token)
         {
-            return await _context.Danhdaus.ToListAsync();
-        }
-
-        // GET: api/Danhdaus/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Danhdau>> GetDanhdau(int id)
-        {
-            var danhdau = await _context.Danhdaus.FindAsync(id);
-
-            if (danhdau == null)
-            {
-                return NotFound();
-            }
-
-            return danhdau;
-        }
-
-        // PUT: api/Danhdaus/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutDanhdau(int id, DanhdauDto danhdauDto)
-        {
-            if (id != danhdauDto.MaTruyen)
-            {
-                return BadRequest();
-            }
-
-            var danhdau = new Danhdau
-            {
-                MaTruyen = danhdauDto.MaTruyen,
-                MaNguoiDung = danhdauDto.MaNguoiDung
-            };
-
-            _context.Entry(danhdau).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DanhdauExists(id))
+                token = token.Trim();
+                var data = token.Substring(7); // Bỏ qua phần "Bearer "
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+
+                // Lấy danh sách các Danhdau của người dùng
+                var dsDanhDau = _context.Danhdaus.Where(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung)).ToList();
+
+                if (dsDanhDau == null || !dsDanhDau.Any())
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                // Tạo danh sách kết quả với thông tin truyện, bút danh và thể loại
+                var result = dsDanhDau.Select(d => new DanhdauDto
+                {
+                    MaTruyen = d.MaTruyen,
+                    Ngaytao = d.Ngaytao,
+                    TenTruyen = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.TenTruyen,
+                    MoTa = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MoTa,
+                    AnhBia = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.AnhBia,
+                    TenButDanh = _context.Truyens
+                        .Include(t => t.MaButDanhNavigation)
+                        .FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MaButDanhNavigation.TenButDanh,
+                    TenTheLoai = _context.Truyens
+                        .Include(t => t.MaTheLoaiNavigation)
+                        .FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MaTheLoaiNavigation.TenTheLoai
+                }).ToList();
+
+                return Ok(new { status = StatusCodes.Status200OK, data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { status = StatusCodes.Status500InternalServerError, message = $"Lỗi: {ex.Message}" });
+            }
         }
 
-        // POST: api/Danhdaus
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Danhdau>> PostDanhdau(DanhdauDto danhdauDto)
+
+    [HttpGet("CheckDanhdau")]
+        public async Task<ActionResult<bool>> CheckDanhdau(int maTruyen, string token)
         {
+            try
+            {
+                token = token.Trim();
+                var data = token.Substring(7); // Bỏ qua phần "Bearer "
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+
+                int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+
+                var existingDanhdau = await _context.Danhdaus
+                    .AnyAsync(d => d.MaTruyen == maTruyen && d.MaNguoiDung == maNguoiDung);
+
+                return Ok(new { status = StatusCodes.Status200OK, data = existingDanhdau });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { status = StatusCodes.Status500InternalServerError, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+
+        // POST: api/Danhdaus
+        [HttpPost]
+        public async Task<ActionResult<Danhdau>> PostDanhdau(DanhdauDto danhdauDto, string token)
+        {
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+
+            int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+
+            var existingDanhdau = await _context.Danhdaus
+                .FirstOrDefaultAsync(d => d.MaTruyen == danhdauDto.MaTruyen && d.MaNguoiDung == maNguoiDung);
+
+            if (existingDanhdau != null)
+            {
+                return Conflict(new { message = "Truyện đã được đánh dấu." });
+            }
+
             var danhdau = new Danhdau
             {
                 MaTruyen = danhdauDto.MaTruyen,
-                MaNguoiDung = danhdauDto.MaNguoiDung
+                MaNguoiDung = maNguoiDung,
             };
 
             _context.Danhdaus.Add(danhdau);
@@ -95,33 +123,33 @@ namespace demodoan1.Controllers
             }
             catch (DbUpdateException)
             {
-                if (DanhdauExists(danhdau.MaTruyen))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(StatusCodes.Status500InternalServerError, "Lỗi khi lưu dữ liệu.");
             }
 
-            return CreatedAtAction("GetDanhdau", new { id = danhdau.MaTruyen }, danhdau);
+            return Ok(new { status = StatusCodes.Status201Created });
         }
 
-        // DELETE: api/Danhdaus/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDanhdau(int id)
+        [HttpDelete("XoaDanhDauTruyen")]
+        public async Task<IActionResult> XoaDanhDauTruyen([FromBody] DanhdauDto danhdauDto,string token)
         {
-            var danhdau = await _context.Danhdaus.FindAsync(id);
-            if (danhdau == null)
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+
+            int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+            var danhDau = await _context.Danhdaus
+                .FirstOrDefaultAsync(d => d.MaTruyen == danhdauDto.MaTruyen && d.MaNguoiDung == maNguoiDung);
+
+            if (danhDau == null)
             {
                 return NotFound();
             }
 
-            _context.Danhdaus.Remove(danhdau);
+            _context.Danhdaus.Remove(danhDau);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Accepted(new { status = StatusCodes.Status202Accepted, message = "Thành công" });
         }
 
         private bool DanhdauExists(int id)

@@ -29,20 +29,28 @@ namespace demodoan1.Controllers
 
         // GET: api/Butdanhs/5
         [HttpGet("DanhSachButDanhTheoNguoiDung")]
-        public async Task<ActionResult<Butdanh>> GetButdanh(String token )
+        public async Task<ActionResult<IEnumerable<object>>> GetButdanh(string token)
         {
             token = token.Trim();
             var data = token.Substring(7);
             Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
             string iDNguoiDung = claimsData["IdUserName"];
-            var danhSachButDanh = _context.Butdanhs.Where(item =>item.MaNguoiDung ==Int64.Parse(iDNguoiDung)).ToList();
+            var danhSachButDanh = _context.Butdanhs.Where(item => item.MaNguoiDung == Int64.Parse(iDNguoiDung)).ToList();
 
-            if (danhSachButDanh == null)
+            if (danhSachButDanh == null || !danhSachButDanh.Any())
             {
                 return NotFound();
             }
 
-            return Ok(new {status = StatusCodes.Status200OK, data= danhSachButDanh });
+            var result = danhSachButDanh.Select(bd => new
+            {
+                bd.MaButDanh,
+                bd.TenButDanh,
+                bd.MaNguoiDung,
+                SoLuongTruyen = _context.Truyens.Count(t => t.MaButDanh == bd.MaButDanh)
+            }).ToList();
+
+            return Ok(new { status = StatusCodes.Status200OK, data = result });
         }
 
         // PUT: api/Butdanhs/5
