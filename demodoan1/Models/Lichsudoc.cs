@@ -5,7 +5,7 @@ namespace demodoan1.Models;
 
 public partial class Lichsudoc
 {
-    public int MaTruyen { get; set; }
+    public int MaChuongTruyen { get; set; }
 
     public int MaNguoiDung { get; set; }
 
@@ -19,7 +19,7 @@ public partial class Lichsudoc
 
     public DateTime? NgayCapNhap { get; set; }
 
-    public virtual User MaNguoiDungNavigation { get; set; } = null!;
+    public virtual Chuongtruyen MaChuongTruyenNavigation { get; set; } = null!;
 
-    public virtual Truyen MaTruyenNavigation { get; set; } = null!;
+    public virtual User MaNguoiDungNavigation { get; set; } = null!;
 }

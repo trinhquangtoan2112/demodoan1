@@ -29,5 +29,7 @@ public partial class Chuongtruyen
 
     public virtual ICollection<Giaodich> Giaodiches { get; set; } = new List<Giaodich>();
 
+    public virtual ICollection<Lichsudoc> Lichsudocs { get; set; } = new List<Lichsudoc>();
+
     public virtual Truyen MaTruyenNavigation { get; set; } = null!;
 }

@@ -332,7 +332,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
         modelBuilder.Entity<Lichsudoc>(entity =>
         {
-            entity.HasKey(e => new { e.MaTruyen, e.MaNguoiDung })
+            entity.HasKey(e => new { e.MaChuongTruyen, e.MaNguoiDung })
                 .HasName("PRIMARY")
                 .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
@@ -340,7 +340,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
             entity.HasIndex(e => e.MaNguoiDung, "FK_lichsu_NguoiDung");
 
-            entity.Property(e => e.MaTruyen).HasColumnName("maTruyen");
+            entity.Property(e => e.MaChuongTruyen).HasColumnName("maChuongTruyen");
             entity.Property(e => e.MaNguoiDung).HasColumnName("maNguoiDung");
             entity.Property(e => e.Audio).HasColumnName("audio");
             entity.Property(e => e.NgayCapNhap)
@@ -357,15 +357,15 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasColumnName("trangthaiDaDoc");
             entity.Property(e => e.TrangthaiXoa).HasColumnName("trangthaiXoa");
 
+            entity.HasOne(d => d.MaChuongTruyenNavigation).WithMany(p => p.Lichsudocs)
+                .HasForeignKey(d => d.MaChuongTruyen)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_lichsu_ChuongTruyen");
+
             entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.Lichsudocs)
                 .HasForeignKey(d => d.MaNguoiDung)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_lichsu_NguoiDung");
-
-            entity.HasOne(d => d.MaTruyenNavigation).WithMany(p => p.Lichsudocs)
-                .HasForeignKey(d => d.MaTruyen)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_lichsu_Truyen");
         });
 
         modelBuilder.Entity<Like>(entity =>

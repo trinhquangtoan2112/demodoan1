@@ -35,8 +35,6 @@ public partial class Truyen
 
     public virtual ICollection<Danhgia> Danhgia { get; set; } = new List<Danhgia>();
 
-    public virtual ICollection<Lichsudoc> Lichsudocs { get; set; } = new List<Lichsudoc>();
-
     public virtual Butdanh MaButDanhNavigation { get; set; } = null!;
 
     public virtual Theloai MaTheLoaiNavigation { get; set; } = null!;
