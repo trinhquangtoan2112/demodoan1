@@ -25,7 +25,7 @@ namespace demodoan1.Controllers
                 return BadRequest(new { Status = StatusCodes.Status400BadRequest, message = "Token không hợp lệ" });
             }
             var truyen = _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
-            if(truyen == null)
+            if (truyen == null)
             {
                 return NotFound();
             }
@@ -34,11 +34,11 @@ namespace demodoan1.Controllers
             string tokenData = TokenClass.Decodejwt(token);
             var dsChuong = _context.Chuongtruyens.Where(item => item.MaTruyen == maTruyen).Select(c => c.MaChuong).ToList();
             var lichSuDoc = _context.Lichsudocs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && dsChuong.Contains(item.MaChuongTruyen));
-            if(lichSuDoc == null)
+            if (lichSuDoc == null)
             {
                 return NotFound();
             }
-               return Ok(new { Status = StatusCodes.Status200OK, data = lichSuDoc }); ;
+            return Ok(new { Status = StatusCodes.Status200OK, data = lichSuDoc }); ;
         }
         [HttpPost("CapNhapLichSuDoc")]
         public async Task<ActionResult> CapNhapLichSuDoc(String? token, int maChuong)
@@ -56,16 +56,16 @@ namespace demodoan1.Controllers
             {
                 return BadRequest();
             }
-            var lichSuDoc = _context.Lichsudocs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item.MaChuongTruyen ==maChuong);
-            if(lichSuDoc != null)
+            var lichSuDoc = _context.Lichsudocs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item.MaChuongTruyen == maChuong);
+            if (lichSuDoc != null)
             {
                 return Ok();
             }
             else
             {
-             
+
                 var layDanhSachMaChuong = _context.Chuongtruyens.Where(item => item.MaTruyen == checkMaChuongTonTai.MaTruyen).Select(item => item.MaChuong).ToList();
-                var checkChuongTruyen = _context.Lichsudocs.FirstOrDefault(item => layDanhSachMaChuong.Contains(item.MaChuongTruyen) && item.MaNguoiDung ==Int64.Parse(tokenData));
+                var checkChuongTruyen = _context.Lichsudocs.FirstOrDefault(item => layDanhSachMaChuong.Contains(item.MaChuongTruyen) && item.MaNguoiDung == Int64.Parse(tokenData));
 
                 if (checkChuongTruyen != null)
                 {
@@ -84,18 +84,18 @@ namespace demodoan1.Controllers
 
                 }
 
-                
+
                 var newHistory = new Lichsudoc
                 {
-                    MaNguoiDung = (int) Int64.Parse( tokenData ),
+                    MaNguoiDung = (int)Int64.Parse(tokenData),
                     MaChuongTruyen = maChuong,
-                    
+
                 };
                 _context.Lichsudocs.Add(newHistory);
                 _context.SaveChanges();
                 return Ok();
             }
-            
+
         }
         [HttpGet("DanhSachLichSuDoc")]
         public async Task<ActionResult> DanhSachLichSuDoc(String? token)
@@ -105,9 +105,9 @@ namespace demodoan1.Controllers
                 return BadRequest(new { Status = StatusCodes.Status400BadRequest, message = "Token không hợp lệ" });
             }
             string tokenData = TokenClass.Decodejwt(token);
-            var lichSuDoc = _context.Lichsudocs.Include(u=> u.MaChuongTruyenNavigation).ThenInclude(u=> u.MaTruyenNavigation).Where(item =>item.MaNguoiDung == Int64.Parse(tokenData)).ToList();
+            var lichSuDoc = _context.Lichsudocs.Include(u => u.MaChuongTruyenNavigation).ThenInclude(u => u.MaTruyenNavigation).Where(item => item.MaNguoiDung == Int64.Parse(tokenData)).ToList();
 
-            if(lichSuDoc.Count == 0)
+            if (lichSuDoc.Count == 0)
             {
 
                 return NotFound();
@@ -132,10 +132,10 @@ namespace demodoan1.Controllers
             }
 
             string tokenData = TokenClass.Decodejwt(token);
-            var data = _context.Lichsudocs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item .MaChuongTruyen ==maChuong);
-         
+            var data = _context.Lichsudocs.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item.MaChuongTruyen == maChuong);
 
-            if (data == null )
+
+            if (data == null)
             {
                 return BadRequest();
             }
@@ -143,7 +143,7 @@ namespace demodoan1.Controllers
             {
                 _context.Lichsudocs.Remove(data);
                 _context.SaveChanges();
-                return Ok(new {status =StatusCodes.Status204NoContent, message ="Xoa lich su thanh cong"});
+                return Ok(new { status = StatusCodes.Status204NoContent, message = "Xoa lich su thanh cong" });
             }
         }
     }
