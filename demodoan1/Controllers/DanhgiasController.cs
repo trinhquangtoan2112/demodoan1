@@ -219,6 +219,30 @@ namespace demodoan1.Controllers
             }
         }
 
+        [HttpGet("CheckDanhgia")]
+        public async Task<ActionResult<bool>> CheckDanhgia(int MaTruyen, string token)
+        {
+            try
+            {
+                token = token.Trim();
+                var data = token.Substring(7); // Bỏ qua phần "Bearer "
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+
+                int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+
+                var existingDanhgia = await _context.Danhgia
+                    .AnyAsync(d => d.MaNguoiDung == maNguoiDung && d.MaTruyen == MaTruyen);
+
+                return Ok(new { status = StatusCodes.Status200OK, data = existingDanhgia });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { status = StatusCodes.Status500InternalServerError, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+
         private bool DanhgiaExists(int id)
         {
             return _context.Danhgia.Any(e => e.MaDanhGia == id);
