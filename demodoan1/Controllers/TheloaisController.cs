@@ -52,6 +52,21 @@ namespace demodoan1.Controllers
             return Ok(new { status = StatusCodes.Status200OK, data = theloaiList });
         }
 
+        [HttpGet("LayDanhSachTheLoai")]
+        public async Task<ActionResult<IEnumerable<GetTheloaiDto>>> LayDanhSachTheLoai()
+        {
+            var theloaiList = await _context.Theloais
+                .Select(tl => new GetTheloaiDto
+                {
+                    MaTheLoai = tl.MaTheLoai,
+                    TenTheLoai = tl.TenTheLoai,
+                    MoTa = tl.MoTa,
+                    Soluongtruyen = _context.Truyens.Count(tr => tr.MaTheLoai == tl.MaTheLoai).ToString()
+                })
+                .ToListAsync();
+
+            return Ok(new { status = StatusCodes.Status200OK, data = theloaiList });
+        }
 
         // GET: api/Theloais/5
         [HttpGet("{id}")]

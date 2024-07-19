@@ -35,7 +35,7 @@ namespace demodoan1.Controllers
         public async Task<ActionResult> GetTruyens()
         {
 
-            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 3 && item.TrangThai != 4).ToListAsync();
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 4).ToListAsync();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -473,6 +473,68 @@ namespace demodoan1.Controllers
         private bool TruyenExists(int id)
         {
             return _context.Truyens.Any(e => e.MaTruyen == id);
+        }
+        [HttpGet("GetDSTruyenAdmin")]
+        public async Task<ActionResult> GetTruyensAdmin()
+        {
+
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).ToListAsync();
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+            var responseData = taiKhoan.Select(u => new
+            {
+                MaTruyen = u.MaTruyen,
+                TenTruyen = u.TenTruyen,
+                AnhBia = u.AnhBia,
+                moTa = u.MoTa,
+                CongBo = u.CongBo,
+                TrangThai = u.TrangThai,
+                NgayTao = u.Ngaytao,
+                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
+                NgayCapNhat = u.NgayCapNhap,
+                TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
+                TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
+            }).ToList().OrderByDescending(item => item.Luotdoc);
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+        }
+        [HttpPut("KhoaTruyen")]
+        public async Task<ActionResult> KhoaTruyen(int maTruyen)
+        {
+
+            var taiKhoan =  _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
+            taiKhoan.TrangThai = 4;
+            _context.Update(taiKhoan);
+            _context.SaveChanges();
+         
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Khóa thành công"
+
+            });
+        }
+        [HttpPut("MoKhoaTruyen")]
+        public async Task<ActionResult> MoKhoaTruyen(int maTruyen)
+        {
+
+            var taiKhoan = _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
+            taiKhoan.TrangThai = 0;
+            _context.Update(taiKhoan);
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message ="Mở khóa thành công"
+            });
         }
     }
 }
