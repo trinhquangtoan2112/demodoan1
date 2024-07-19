@@ -11,6 +11,8 @@ using demodoan1.Controllers;
 using demodoan1.Helpers.VnPayHelper;
 using CloudinaryDotNet;
 using dotenv.net;
+using demodoan1.Helpers;
+using Google.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<TextToSpeechService>(); 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());

@@ -16,4 +16,12 @@
       
        
     }
+    public class ChuongtruyenNoiDung
+    {
+       
+        public string? NoiDung { get; set; }
+
+
+
+    }
 }

@@ -10,6 +10,7 @@ using demodoan1.Models.ChuongtruyenDto;
 using demodoan1.Models.TruyenDto;
 using demodoan1.Helpers;
 using Org.BouncyCastle.Asn1.Ocsp;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace demodoan1.Controllers
 {
@@ -18,10 +19,11 @@ namespace demodoan1.Controllers
     public class ChuongtruyensController : ControllerBase
     {
         private readonly DbDoAnTotNghiepContext _context;
-
-        public ChuongtruyensController(DbDoAnTotNghiepContext context)
+        private readonly TextToSpeechService _ttsService;
+        public ChuongtruyensController(DbDoAnTotNghiepContext context, TextToSpeechService ttsService)
         {
             _context = context;
+            _ttsService = ttsService;
         }
 
         // GET: api/Chuongtruyens
@@ -351,6 +353,20 @@ namespace demodoan1.Controllers
         private bool ChuongtruyenExists(int id)
         {
             return _context.Chuongtruyens.Any(e => e.MaChuong == id);
+        }
+
+        [HttpPost("DocChuongTruyen")]
+        public async Task<IActionResult> DocChuongTruyen([FromBody] ChuongtruyenNoiDung chuongtruyenNoiDung)
+        {
+            try
+            {
+                var audioBytes = await _ttsService.SynthesizeTextToSpeechAsync(chuongtruyenNoiDung.NoiDung);
+                return File(audioBytes, "audio/mpeg", "output.mp3");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }
