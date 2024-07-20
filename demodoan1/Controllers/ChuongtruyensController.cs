@@ -37,7 +37,7 @@ namespace demodoan1.Controllers
                  tokenData = TokenClass.Decodejwt(token);
             }
           
-            var taiKhoan = await _context.Chuongtruyens.Where(item =>item.MaTruyen ==maTruyen).ToListAsync();
+            var taiKhoan = await _context.Chuongtruyens.Where(item =>item.MaTruyen ==maTruyen && item.TrangThai!=0).ToListAsync();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -195,7 +195,7 @@ namespace demodoan1.Controllers
                 
                     thongTin.TenChuong = chuongtruyen.TenChuong;
                         thongTin.NoiDung = chuongtruyen.NoiDung;
-                       
+                    thongTin.TrangThai = 0;
                        
                         _context.Update(thongTin);
                         await _context.SaveChangesAsync();
@@ -230,7 +230,7 @@ namespace demodoan1.Controllers
                 var chuongtruyen = new Chuongtruyen
                 {
                     TenChuong = chuongtruyenDto.TenChuong,
-                    TrangThai = 1,
+                    TrangThai = 0,
                     NoiDung = chuongtruyenDto.NoiDung,
                     HienThi = 1,
                     GiaChuong = 0,
@@ -298,7 +298,7 @@ namespace demodoan1.Controllers
         public async Task<ActionResult> GetTruyen(string? tenChuong,int? maTruyen)
         {
             IQueryable<Chuongtruyen> query = _context.Chuongtruyens
-                                              .Where(u => u.TrangThai != 3  && u.MaTruyen == maTruyen);
+                                              .Where(u => u.TrangThai != 0  && u.MaTruyen == maTruyen);
 
             if (!string.IsNullOrEmpty(tenChuong))
             {
