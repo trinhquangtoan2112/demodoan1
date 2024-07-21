@@ -368,5 +368,40 @@ namespace demodoan1.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("DanhSachChuongTruyenCanDuyet")]
+
+        public async Task<IActionResult> DanhSachChuongTruyenCanDuyet()
+        {
+           
+            var dsChuong =_context.Chuongtruyens.Where(item=>  item.TrangThai ==0).ToList();
+            if(dsChuong.Count == 0)
+            {
+                return NotFound(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    message = "Không có truyện",
+                });
+            }
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Danh sách chương",
+                data = dsChuong
+            });
+        }
+        [HttpPut("DuyetChuong")]
+        public async Task<ActionResult> DuyetChuong(int maChuong)
+        {
+            var taiKhoan = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == maChuong);
+            taiKhoan.TrangThai = 1;
+            _context.Chuongtruyens.Update(taiKhoan);
+            _context.SaveChanges();
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Thành công",
+            });
+        }
+
     }
 }

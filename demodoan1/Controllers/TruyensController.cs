@@ -535,6 +535,37 @@ namespace demodoan1.Controllers
                 message = "Mở khóa thành công"
             });
         }
-           
+        [HttpGet("DanhsachTruyenCanDuyet")]
+        public async Task<ActionResult> DanhsachTruyenCanDuyet()
+        {
+            var taiKhoan = _context.Truyens.Where(item => item.TrangThai == 0).ToList();
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    message = "Không có truyện",
+                });
+            }
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Danh sách truyện",
+                data = taiKhoan
+            });
         }
+        [HttpPut("DuyetTruyen")]
+        public async Task<ActionResult> DuyetTruyen(int maTruyen)
+        {
+            var taiKhoan = _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
+            taiKhoan.TrangThai = 1;
+            _context.Truyens.Update(taiKhoan);
+            _context.SaveChanges();
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Thành công",
+            });
+        }
+    }
 }
