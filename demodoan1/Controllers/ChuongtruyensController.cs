@@ -99,6 +99,7 @@ namespace demodoan1.Controllers
                     {
                         var responseData = new
                         {
+                            maTruyen = currentChapter.MaTruyen,
                             Machuongtruyen = currentChapter.MaChuong,
                             TenChuong = currentChapter.TenChuong,
                             TrangThai = currentChapter.TrangThai,

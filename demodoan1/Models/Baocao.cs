@@ -20,6 +20,8 @@ public partial class Baocao
     public int MaNguoiDung { get; set; }
 
     public string? Tieude { get; set; }
+    public int? Trangthai { get; set; }
 
     public virtual User MaNguoiDungNavigation { get; set; } = null!;
+
 }
