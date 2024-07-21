@@ -35,7 +35,7 @@ namespace demodoan1.Controllers
         public async Task<ActionResult> GetTruyens()
         {
 
-            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 4).ToListAsync();
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 4 && item.TrangThai!=0).ToListAsync();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -98,7 +98,7 @@ namespace demodoan1.Controllers
         public async Task<ActionResult> GetTruyensTrangChu()
         {
 
-            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 3 && item.TrangThai != 4).ToListAsync();
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 0 && item.TrangThai != 4).ToListAsync();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -347,7 +347,7 @@ namespace demodoan1.Controllers
                 datauserr.MoTa = truyenDto.MoTa;
                 datauserr.AnhBia = linkTruyen != null ? linkTruyen : datauserr.AnhBia;
                 datauserr.MaTheLoai = truyenDto.MaTheLoai;
-                datauserr.TrangThai = truyenDto.TrangThai;
+                datauserr.TrangThai =0;
 
                 _context.Truyens.Update(datauserr);
 
@@ -447,7 +447,7 @@ namespace demodoan1.Controllers
             return Ok(new
             {
                 status = StatusCodes.Status202Accepted,
-                message = string.Format("Đã xóa thành công {0}", id)
+                message = string.Format("Đã ẩn thành công {0}", id)
             }
             );
         }
@@ -466,7 +466,7 @@ namespace demodoan1.Controllers
             return Ok(new
             {
                 status = StatusCodes.Status202Accepted,
-                message = string.Format("Đã xóa thành công {0}", id)
+                message = string.Format("Đã hiện thành công {0}", id)
             }
             );
         }
@@ -524,17 +524,17 @@ namespace demodoan1.Controllers
         [HttpPut("MoKhoaTruyen")]
         public async Task<ActionResult> MoKhoaTruyen(int maTruyen)
         {
-
             var taiKhoan = _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
-            taiKhoan.TrangThai = 0;
+            taiKhoan.TrangThai = 1;
             _context.Update(taiKhoan);
             _context.SaveChanges();
 
             return Ok(new
             {
                 status = StatusCodes.Status200OK,
-                message ="Mở khóa thành công"
+                message = "Mở khóa thành công"
             });
         }
-    }
+           
+        }
 }
