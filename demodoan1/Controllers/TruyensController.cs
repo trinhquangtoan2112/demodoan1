@@ -538,7 +538,7 @@ namespace demodoan1.Controllers
         [HttpGet("DanhsachTruyenCanDuyet")]
         public async Task<ActionResult> DanhsachTruyenCanDuyet()
         {
-            var taiKhoan = _context.Truyens.Where(item => item.TrangThai == 0).ToList();
+            var taiKhoan = _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.TrangThai == 0).ToList();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new
@@ -547,17 +547,40 @@ namespace demodoan1.Controllers
                     message = "Không có truyện",
                 });
             }
+            var responseData = taiKhoan.Select(u => new
+            {
+                MaTruyen = u.MaTruyen,
+                TenTruyen = u.TenTruyen,
+                AnhBia = u.AnhBia,
+                moTa = u.MoTa,
+                CongBo = u.CongBo,
+                TrangThai = u.TrangThai,
+                NgayTao = u.Ngaytao,
+                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
+                NgayCapNhat = u.NgayCapNhap,
+                TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
+                TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
+            }).ToList().OrderByDescending(item => item.Luotdoc);
             return Ok(new
             {
                 status = StatusCodes.Status200OK,
                 message = "Danh sách truyện",
-                data = taiKhoan
+                data = responseData
             });
         }
         [HttpPut("DuyetTruyen")]
         public async Task<ActionResult> DuyetTruyen(int maTruyen)
         {
             var taiKhoan = _context.Truyens.FirstOrDefault(item => item.MaTruyen == maTruyen);
+            if(taiKhoan == null)
+            {
+                return NotFound(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    message = "Không có truyện",
+                });
+            }
             taiKhoan.TrangThai = 1;
             _context.Truyens.Update(taiKhoan);
             _context.SaveChanges();
@@ -567,5 +590,6 @@ namespace demodoan1.Controllers
                 message = "Thành công",
             });
         }
+      
     }
 }
