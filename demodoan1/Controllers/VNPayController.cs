@@ -64,9 +64,9 @@ namespace demodoan1.Controllers
             string idUser = vnp_OrderInfo.Split(":")[1];
             var giaoDichLichSu = _context.Giaodiches.FirstOrDefault(item => item.MaGiaoDich == Int64.Parse(idUser));
 
-            var userInfo = _context.Users.FirstOrDefault(item => item.MaNguoiDung == giaoDichLichSu.MaNguoiDung);
+            var userInfo = _context.Users.FirstOrDefault(item => item.MaNguoiDung == giaoDichLichSu.MaNguoiDung );
             var response = _vnPayService.PaymentExcute(Request.Query);
-            if (response == null || response.VnPayResponseCode != "00" || userInfo == null)
+            if (response == null || response.VnPayResponseCode != "00" || userInfo == null || giaoDichLichSu ==null ||giaoDichLichSu.Trangthai==1)
             {
                 Console.WriteLine("14214241124");
                 return NoContent();
@@ -80,8 +80,9 @@ namespace demodoan1.Controllers
             {
                 userInfo.SoXu += 500;
             }
-           
+            giaoDichLichSu.Trangthai = 1;
             _context.Users.Update(userInfo);
+            _context.Giaodiches.Update(giaoDichLichSu);
             _context.SaveChanges();
             var viewModel = new SuccessViewModel
             {

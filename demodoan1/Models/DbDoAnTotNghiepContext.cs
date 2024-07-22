@@ -48,7 +48,6 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -116,6 +115,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasColumnName("tieude")
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
+            entity.Property(e => e.Trangthai).HasColumnName("trangthai");
 
             entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.Baocaos)
                 .HasForeignKey(d => d.MaNguoiDung)
