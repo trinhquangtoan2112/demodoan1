@@ -370,5 +370,63 @@ namespace demodoan1.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("DanhSachChuongTruyenCanDuyet")]
+
+        public async Task<IActionResult> DanhSachChuongTruyenCanDuyet()
+        {
+           
+            var dsChuong =_context.Chuongtruyens.Include(u => u.MaTruyenNavigation).ThenInclude(u => u.MaButDanhNavigation).Where(item=>  item.TrangThai ==0 && item.MaChuong !=22).ToList();
+            if(dsChuong.Count == 0)
+            {
+                return NotFound(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    message = "Không có chương",
+                });
+            }
+            var responseData = dsChuong.Select(u => new
+            {
+                Machuongtruyen = u.MaChuong,
+                TenChuong = u.TenChuong,
+                TrangThai = u.TrangThai,
+                Luotdoc = u.LuotDoc,
+                HienThi = u.HienThi,
+                GiaChuong = u.GiaChuong,
+                Stt = u.Stt,
+                NgayTao = u.Ngaytao,
+                NgayCapNhat = u.NgayCapNhap,
+                 TenTruyen =u.MaTruyenNavigation.TenTruyen,
+                 tenButdanh = u.MaTruyenNavigation.MaButDanhNavigation.TenButDanh
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Danh sách chương",
+                data = responseData 
+            });
+        }
+        [HttpPut("DuyetChuong")]
+        public async Task<ActionResult> DuyetChuong(int maChuong)
+        {
+            var taiKhoan = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == maChuong);
+            if (taiKhoan == null)
+            {
+                return NotFound(new
+                {
+                    status = StatusCodes.Status404NotFound,
+                    message = "Không có truyện",
+                });
+            }
+            taiKhoan.TrangThai = 1;
+            _context.Chuongtruyens.Update(taiKhoan);
+            _context.SaveChanges();
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "Thành công",
+            });
+        }
+
     }
 }

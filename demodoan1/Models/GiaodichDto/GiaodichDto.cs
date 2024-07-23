@@ -16,4 +16,15 @@
 
         public int? Trangthai { get; set; }
     }
+    public class ErrorViewModel
+    {
+        public int StatusCode { get; set; }
+        public string Message { get; set; }
+    }
+    public class SuccessViewModel
+    {
+        public int StatusCode { get; set; }
+        public string Message { get; set; }
+        public string OrderInfo { get; set; }
+    }
 }
