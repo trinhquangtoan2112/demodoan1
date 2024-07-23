@@ -46,6 +46,7 @@ namespace demodoan1.Controllers
                         TenNguoiDung = d.MaNguoiDungNavigation.TenNguoiDung,
                         AnhDaiDien = d.MaNguoiDungNavigation.AnhDaiDien,
                         CheckCuaToi = d.MaNguoiDung == maNguoiDung,
+                        Solike = _context.Likes.Count(l => l.MaThucThe == d.MaDanhGia && l.LoaiThucTheLike == 2)
                     })
                     .ToListAsync();
 
@@ -75,6 +76,7 @@ namespace demodoan1.Controllers
                         TenNguoiDung = d.MaNguoiDungNavigation.TenNguoiDung,
                         AnhDaiDien = d.MaNguoiDungNavigation.AnhDaiDien,
                         CheckCuaToi = false,
+                        Solike = _context.Likes.Count(l => l.MaThucThe == d.MaDanhGia && l.LoaiThucTheLike == 2)
                     })
                     .ToListAsync();
 

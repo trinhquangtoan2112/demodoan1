@@ -37,7 +37,8 @@ namespace demodoan1.Controllers
                         NgayCapNhap = d.NgayCapNhap,
                         TenNguoiDung = d.MaNguoiDungNavigation.TenNguoiDung,
                         AnhDaiDien = d.MaNguoiDungNavigation.AnhDaiDien,
-                        CheckCuaToi = false, // Add logic here if needed to determine if it's the user's comment
+                        Solike = _context.Likes.Count(l => l.MaThucThe == d.MabinhLuan && l.LoaiThucTheLike == 3),
+                        CheckCuaToi = false, // Add logic here if needed to determine if it's the user's comment                     
                         DsPhBinhLuan = _context.Phanhoibinhluans
                             .Where(t => t.MaBinhLuan == d.MabinhLuan)
                             .Select(p => new DSBinhLuanDto.DSPhanHoiDto
@@ -48,6 +49,7 @@ namespace demodoan1.Controllers
                                 NgayCapNhap = p.NgayCapNhap,
                                 TenNguoiDung = p.MaNguoiDungNavigation.TenNguoiDung,
                                 AnhDaiDien = p.MaNguoiDungNavigation.AnhDaiDien,
+                                Solike = _context.Likes.Count(l => l.MaThucThe == p.MaPhanHoiBinhLuan && l.LoaiThucTheLike == 4),
                                 CheckCuaToi = false // Add logic here if needed to determine if it's the user's reply
                             }).ToList()
                     })
@@ -83,6 +85,7 @@ namespace demodoan1.Controllers
                         TenNguoiDung = d.MaNguoiDungNavigation.TenNguoiDung,
                         AnhDaiDien = d.MaNguoiDungNavigation.AnhDaiDien,
                         CheckCuaToi = d.MaNguoiDung == maNguoiDung, // Add logic here if needed to determine if it's the user's comment
+                        Solike = _context.Likes.Count(l => l.MaThucThe == d.MabinhLuan && l.LoaiThucTheLike == 3),
                         DsPhBinhLuan = _context.Phanhoibinhluans
                             .Where(t => t.MaBinhLuan == d.MabinhLuan)
                             .Select(p => new DSBinhLuanDto.DSPhanHoiDto
@@ -93,6 +96,7 @@ namespace demodoan1.Controllers
                                 NgayCapNhap = p.NgayCapNhap,
                                 TenNguoiDung = p.MaNguoiDungNavigation.TenNguoiDung,
                                 AnhDaiDien = p.MaNguoiDungNavigation.AnhDaiDien,
+                                Solike = _context.Likes.Count(l => l.MaThucThe == p.MaPhanHoiBinhLuan && l.LoaiThucTheLike == 4),
                                 CheckCuaToi = p.MaNguoiDung == maNguoiDung // Add logic here if needed to determine if it's the user's reply
                             }).ToList()
                     })

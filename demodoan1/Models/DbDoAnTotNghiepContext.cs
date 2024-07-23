@@ -370,21 +370,21 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
         modelBuilder.Entity<Like>(entity =>
         {
-            entity.HasKey(e => e.MaLike).HasName("PRIMARY");
+            entity.HasKey(e => new { e.MaNguoiDung, e.LoaiThucTheLike, e.MaThucThe })
+                .HasName("PK_Likes");
 
             entity.ToTable("likes");
 
-            entity.HasIndex(e => new { e.MaNguoiDung, e.LoaiThucTheLike, e.MaThucThe }, "UC_Like_User_LoaiThucThe_ThucThe").IsUnique();
-
-            entity.Property(e => e.MaLike).HasColumnName("maLike");
             entity.Property(e => e.LoaiThucTheLike).HasColumnName("loaiThucTheLike");
             entity.Property(e => e.MaNguoiDung).HasColumnName("maNguoiDung");
             entity.Property(e => e.MaThucThe).HasColumnName("maThucThe");
+
             entity.Property(e => e.NgayCapNhap)
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("ngayCapNhap");
+
             entity.Property(e => e.Ngaytao)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
@@ -395,6 +395,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Like_NguoiDung");
         });
+
 
         modelBuilder.Entity<Phanhoi>(entity =>
         {

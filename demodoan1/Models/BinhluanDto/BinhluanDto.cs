@@ -18,6 +18,7 @@
         public DateTime? NgayCapNhap { get; set; }
         public string? TenNguoiDung { get; set; }
         public string? AnhDaiDien { get; set; }
+        public int? Solike { get; set; }
         public bool? CheckCuaToi { get; set; }
         public List<DSPhanHoiDto>? DsPhBinhLuan { get; set; }
 
@@ -30,6 +31,7 @@
             public string? TenNguoiDung { get; set; }
             public string? AnhDaiDien { get; set; }
             public bool? CheckCuaToi { get; set; }
+            public int? Solike { get; set; }
         }
     }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using demodoan1.Models;
 using demodoan1.Models.LikeDto;
+using demodoan1.Helpers;
 
 namespace demodoan1.Controllers
 {
@@ -26,95 +27,93 @@ namespace demodoan1.Controllers
             return await _context.Likes.ToListAsync();
         }
 
-        // GET: api/Likes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Like>> GetLike(int id)
-        {
-            var like = await _context.Likes.FindAsync(id);
-
-            if (like == null)
-            {
-                return NotFound();
-            }
-
-            return like;
-        }
-
-        // PUT: api/Likes/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutLike(int id, LikeDto likeDto)
-        {
-            if (id != likeDto.MaLike)
-            {
-                return BadRequest();
-            }
-
-            var like = new Like
-            {
-                MaLike = likeDto.MaLike,
-                LoaiThucTheLike = likeDto.LoaiThucTheLike,
-                MaThucThe = likeDto.MaThucThe,
-                MaNguoiDung = likeDto.MaNguoiDung
-            };
-
-            _context.Entry(like).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!LikeExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/Likes
         [HttpPost]
-        public async Task<ActionResult<Like>> PostLike(LikeDto likeDto)
+        public async Task<ActionResult<Like>> PostLike(LikeDto likeDto, string token)
         {
-            var like = new Like
+            try
             {
-                MaLike = likeDto.MaLike,
-                LoaiThucTheLike = likeDto.LoaiThucTheLike,
-                MaThucThe = likeDto.MaThucThe,
-                MaNguoiDung = likeDto.MaNguoiDung
-            };
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
 
-            _context.Likes.Add(like);
-            await _context.SaveChangesAsync();
+                var like = new Like
+                {
+                    LoaiThucTheLike = likeDto.LoaiThucTheLike,
+                    MaThucThe = likeDto.MaThucThe,
+                    MaNguoiDung = maNguoiDung,
+                };
 
-            return CreatedAtAction("GetLike", new { id = like.MaLike }, like);
+                _context.Likes.Add(like);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { status = StatusCodes.Status201Created, data = "Thêm thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = "Lỗi xảy ra." });
+            }
         }
 
         // DELETE: api/Likes/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLike(int id)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteLike(LikeDto likeDto, string token)
         {
-            var like = await _context.Likes.FindAsync(id);
-            if (like == null)
+            try
             {
-                return NotFound();
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+
+                var likes = await _context.Likes
+                    .Where(l => l.LoaiThucTheLike == likeDto.LoaiThucTheLike && l.MaThucThe == likeDto.MaThucThe && l.MaNguoiDung == maNguoiDung)
+                    .ToListAsync();
+
+                if (likes.Count == 0)
+                {
+                    return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy bản ghi nào phù hợp." });
+                }
+
+                _context.Likes.RemoveRange(likes);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { status = StatusCodes.Status200OK, message = "Xóa thành công" });
             }
-
-            _context.Likes.Remove(like);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = "Lỗi xảy ra." });
+            }
         }
 
-        private bool LikeExists(int id)
+        [HttpPost("CheckMultipleLikes")]
+        public async Task<ActionResult<Dictionary<int, bool>>> CheckMultipleLikes(LikeCheckRequest request, string token)
         {
-            return _context.Likes.Any(e => e.MaLike == id);
+            try
+            {
+                token = token.Trim();
+                var data = token.Substring(7);
+                Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+                string iDNguoiDung = claimsData["IdUserName"];
+                int maNguoiDungFromToken = (int)Int64.Parse(iDNguoiDung);
+
+                var likes = await _context.Likes
+                    .Where(l => l.LoaiThucTheLike == request.LoaiThucTheLike
+                                && l.MaNguoiDung == maNguoiDungFromToken
+                                && request.MaThucThes.Contains(l.MaThucThe.Value))
+                    .ToListAsync();
+
+                var result = request.MaThucThes.ToDictionary(id => id, id => likes.Any(l => l.MaThucThe == id));
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = StatusCodes.Status400BadRequest, message = "An error occurred while processing your request." });
+            }
         }
     }
 }
