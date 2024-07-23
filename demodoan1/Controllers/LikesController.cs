@@ -103,7 +103,7 @@ namespace demodoan1.Controllers
                 var likes = await _context.Likes
                     .Where(l => l.LoaiThucTheLike == request.LoaiThucTheLike
                                 && l.MaNguoiDung == maNguoiDungFromToken
-                                && request.MaThucThes.Contains(l.MaThucThe.Value))
+                                && request.MaThucThes.Contains(l.MaThucThe))
                     .ToListAsync();
 
                 var result = request.MaThucThes.ToDictionary(id => id, id => likes.Any(l => l.MaThucThe == id));

@@ -3,9 +3,9 @@
     public class LikeDto
     {
 
-        public int? LoaiThucTheLike { get; set; }
+        public int LoaiThucTheLike { get; set; }
 
-        public int? MaThucThe { get; set; }
+        public int MaThucThe { get; set; }
 
         public int MaNguoiDung { get; set; }
     }

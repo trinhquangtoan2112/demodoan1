@@ -5,10 +5,9 @@ namespace demodoan1.Models;
 
 public partial class Like
 {
-
-    public int? LoaiThucTheLike { get; set; }
-
-    public int? MaThucThe { get; set; }
+    public int LoaiThucTheLike { get; set; }
+     
+    public int MaThucThe { get; set; }
 
     public DateTime? Ngaytao { get; set; }
 

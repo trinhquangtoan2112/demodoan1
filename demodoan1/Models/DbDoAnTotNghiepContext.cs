@@ -48,6 +48,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -371,20 +372,19 @@ public partial class DbDoAnTotNghiepContext : DbContext
         modelBuilder.Entity<Like>(entity =>
         {
             entity.HasKey(e => new { e.MaNguoiDung, e.LoaiThucTheLike, e.MaThucThe })
-                .HasName("PK_Likes");
+                .HasName("PRIMARY")
+                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
 
             entity.ToTable("likes");
 
-            entity.Property(e => e.LoaiThucTheLike).HasColumnName("loaiThucTheLike");
             entity.Property(e => e.MaNguoiDung).HasColumnName("maNguoiDung");
+            entity.Property(e => e.LoaiThucTheLike).HasColumnName("loaiThucTheLike");
             entity.Property(e => e.MaThucThe).HasColumnName("maThucThe");
-
             entity.Property(e => e.NgayCapNhap)
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("ngayCapNhap");
-
             entity.Property(e => e.Ngaytao)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
@@ -395,7 +395,6 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Like_NguoiDung");
         });
-
 
         modelBuilder.Entity<Phanhoi>(entity =>
         {
