@@ -590,6 +590,37 @@ namespace demodoan1.Controllers
                 message = "Thành công",
             });
         }
-      
+        [HttpGet("GetTruyenTheoTenTruyen")]
+        public async Task<ActionResult> GetTruyenTheoTenTruyen(String tenTruyen)
+        {
+            var searchString = tenTruyen?.ToLower() ?? "";
+
+            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.TenTruyen.Contains(searchString) && item.TrangThai!=0 && item.TrangThai !=4).ToListAsync();
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+            var responseData = taiKhoan.Select(u => new
+            {
+                MaTruyen = u.MaTruyen,
+                TenTruyen = u.TenTruyen,
+                AnhBia = u.AnhBia,
+                moTa = u.MoTa,
+                CongBo = u.CongBo,
+                TrangThai = u.TrangThai,
+                NgayTao = u.Ngaytao,
+                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
+                NgayCapNhat = u.NgayCapNhap,
+                TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
+                TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+        }
     }
 }
