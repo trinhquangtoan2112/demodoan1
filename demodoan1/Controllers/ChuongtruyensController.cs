@@ -108,6 +108,7 @@ namespace demodoan1.Controllers
                             GiaChuong = currentChapter.GiaChuong,
                             LuotDoc = currentChapter.LuotDoc,
                             Stt = currentChapter.Stt,
+                            Solike = _context.Likes.Count(l => l.MaThucThe == currentChapter.MaChuong),
                             NgayTao = currentChapter.Ngaytao,
                             NgayCapNhat = currentChapter.NgayCapNhap,
                             trangTruoc = previousChapter?.MaChuong,

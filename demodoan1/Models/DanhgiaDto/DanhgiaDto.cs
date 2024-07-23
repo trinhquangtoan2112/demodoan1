@@ -35,6 +35,8 @@
         public string? AnhDaiDien { get; set; }
 
         public bool? CheckCuaToi { get; set; }
+
+        public int Solike { get; set; }
     }
 
 }

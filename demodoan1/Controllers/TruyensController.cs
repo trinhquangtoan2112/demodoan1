@@ -207,6 +207,14 @@ namespace demodoan1.Controllers
             var totalCount = truyen.Chuongtruyens.Count(); // Tổng số chương trong truyện
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
+/*            var storyLikes = _context.Likes
+                .Where(l => l.MaThucThe == truyen.MaTruyen && l.LoaiThucTheLike == 1)
+                .Count();
+
+            var chapterLikes = _context.Likes
+                .Where(l => truyen.Chuongtruyens.Any(ch => ch.MaChuong == l.MaThucThe) && l.LoaiThucTheLike == 5)
+                .Count();*/
+
             var responseData = new
             {
                 MaTruyen = truyen.MaTruyen,
@@ -221,6 +229,7 @@ namespace demodoan1.Controllers
                 TenTheLoai = truyen.MaTheLoaiNavigation?.TenTheLoai,
                 MaTheLoai = truyen.MaTheLoai,
                 MaButDanh = truyen.MaButDanh,
+                Solike = _context.Likes.Count(l => l.MaThucThe == truyen.MaTruyen && l.LoaiThucTheLike == 1),
                 TongLuotDoc = truyen.Chuongtruyens.Sum(c => c.LuotDoc),
                 TotalCount = totalPages, // Tổng số chương
                 Page = page,
@@ -235,6 +244,7 @@ namespace demodoan1.Controllers
                         MaChuong = ch.MaChuong,
                         TenChuong = ch.TenChuong,
                         GiaChuong = ch.GiaChuong,
+                        Solike = _context.Likes.Count(l => l.MaThucThe == ch.MaChuong && l.LoaiThucTheLike == 5),
                         NgayTao = ch.Ngaytao,
                         NgayCapNhat = ch.NgayCapNhap,
                         Stt = ch.Stt
