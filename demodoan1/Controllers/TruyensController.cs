@@ -201,20 +201,13 @@ namespace demodoan1.Controllers
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
             }
 
-            // Tính toán chỉ số bắt đầu và số lượng chương cần lấy
+          
             int skip = (page - 1) * pageSize;
             int take = pageSize;
 
-            var totalCount = truyen.Chuongtruyens.Count(); // Tổng số chương trong truyện
+            var totalCount = truyen.Chuongtruyens.Count(); 
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-/*            var storyLikes = _context.Likes
-                .Where(l => l.MaThucThe == truyen.MaTruyen && l.LoaiThucTheLike == 1)
-                .Count();
-
-            var chapterLikes = _context.Likes
-                .Where(l => truyen.Chuongtruyens.Any(ch => ch.MaChuong == l.MaThucThe) && l.LoaiThucTheLike == 5)
-                .Count();*/
 
             var responseData = new
             {
@@ -353,7 +346,6 @@ namespace demodoan1.Controllers
                         linkTruyen = uploadResult.Url.ToString();
                     }
                 }
-
                 datauserr.TenTruyen = truyenDto.TenTruyen;
                 datauserr.MoTa = truyenDto.MoTa;
                 datauserr.AnhBia = linkTruyen != null ? linkTruyen : datauserr.AnhBia;
@@ -642,7 +634,7 @@ namespace demodoan1.Controllers
                 return NotFound(new { status = StatusCodes.Status400BadRequest, message = "Không tìm thấy" });
             }
             token = token.Trim();
-            var data = token.Substring(7); // Bỏ qua phần "Bearer "
+            var data = token.Substring(7);
             Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
             string iDNguoiDung = claimsData["IdUserName"];
             var taiKhoan = await _context.Butdanhs.Include(u => u.Truyens).ThenInclude(u => u.MaTheLoaiNavigation).Where(item => item.MaNguoiDung ==Int64.Parse(iDNguoiDung) ).ToListAsync();
@@ -651,7 +643,6 @@ namespace demodoan1.Controllers
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
             }
 
-            // Extract MaButDanh values from taiKhoan
             var maButDanhList = taiKhoan.Select(t => t.MaButDanh).ToList();
 
             var dsTruyen = await _context.Truyens
@@ -669,6 +660,7 @@ namespace demodoan1.Controllers
                     NgayCapNhat = u.NgayCapNhap,
                     MaButDanh = u.MaButDanh,
                     TenButDanh = u.MaButDanhNavigation.TenButDanh,
+                    TrangThaiButDanh = u.MaButDanhNavigation.Trangthai,
                     TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null
                 })
                 .ToListAsync();

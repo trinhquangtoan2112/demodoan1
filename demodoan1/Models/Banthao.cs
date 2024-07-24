@@ -5,7 +5,7 @@ namespace demodoan1.Models;
 
 public partial class Banthao
 {
-    public int MaBanThao { get; set; }
+    public int? MaBanThao { get; set; }
 
     public string? TenBanThao { get; set; }
 

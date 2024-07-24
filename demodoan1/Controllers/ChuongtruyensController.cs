@@ -152,8 +152,7 @@ namespace demodoan1.Controllers
                                 Stt = currentChapter.Stt,
                                 NgayTao = currentChapter.Ngaytao,
                                 NgayCapNhat = currentChapter.NgayCapNhap,
-                              
-                                  trangTruoc = previousChapter?.MaChuong,
+                                trangTruoc = previousChapter?.MaChuong,
                                 trangTiep = nextChapter?.MaChuong
                             };
                             return Ok(new
