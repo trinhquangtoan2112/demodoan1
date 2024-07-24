@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using demodoan1.Data;
+using demodoan1.Helpers;
 
 namespace demodoan1.Controllers
 {
@@ -235,7 +236,7 @@ namespace demodoan1.Controllers
                 Page = page,
                 PageSize = pageSize,
                 Data = truyen.Chuongtruyens
-                    .Where(ch => ch.TrangThai != 3 && ch.HienThi != 0)
+                    .Where(ch => ch.TrangThai != 0 && ch.HienThi != 0)
                     .OrderBy(ch => ch.Stt)
                     .Skip(skip)
                     .Take(take)
@@ -624,6 +625,49 @@ namespace demodoan1.Controllers
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
                 TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
                 Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+        }
+        [HttpGet("GetTruyenTheoIDNguoiDung")]
+        public async Task<ActionResult> GetTruyenTheoIDNguoiDung(String token)
+        {
+
+            if (String.IsNullOrEmpty(token))
+            {
+                return NotFound(new { status = StatusCodes.Status400BadRequest, message = "Không tìm thấy" });
+            }
+            token = token.Trim();
+            var data = token.Substring(7); // Bỏ qua phần "Bearer "
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+            var taiKhoan = await _context.Butdanhs.Include(u => u.Truyens).ThenInclude(u => u.MaTheLoaiNavigation).Where(item => item.MaNguoiDung ==Int64.Parse(iDNguoiDung) ).ToListAsync();
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+            var responseData = taiKhoan.Select(t => new
+            {
+                MaButDanh = t.MaButDanh,
+                TenButDanh = t.TenButDanh,
+               TrangThai = t.Trangthai,
+                Truyen = t.Truyens.Select(u => new
+                {
+                    MaTruyen = u.MaTruyen,
+                    TenTruyen = u.TenTruyen,
+                    MoTa = u.MoTa,
+                    AnhBia = u.AnhBia,
+                    CongBo = u.CongBo,
+                    TrangThai = u.TrangThai,
+                    NgayTao = u.Ngaytao,
+                    NgayCapNhat = u.NgayCapNhap,
+                  
+                    TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                }).ToList()
             }).ToList();
 
             return Ok(new

@@ -47,6 +47,7 @@ namespace demodoan1.Controllers
                 bd.MaButDanh,
                 bd.TenButDanh,
                 bd.MaNguoiDung,
+                bd.Trangthai,
                 SoLuongTruyen = _context.Truyens.Count(t => t.MaButDanh == bd.MaButDanh)
             }).ToList();
 
