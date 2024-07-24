@@ -650,6 +650,28 @@ namespace demodoan1.Controllers
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
             }
+
+            // Extract MaButDanh values from taiKhoan
+            var maButDanhList = taiKhoan.Select(t => t.MaButDanh).ToList();
+
+            var dsTruyen = await _context.Truyens
+                .Include(u => u.MaTheLoaiNavigation).Include(u => u.MaButDanhNavigation)
+                .Where(item => maButDanhList.Contains(item.MaButDanh))
+                .Select(u => new
+                {
+                    MaTruyen = u.MaTruyen,
+                    TenTruyen = u.TenTruyen,
+                    MoTa = u.MoTa,
+                    AnhBia = u.AnhBia,
+                    CongBo = u.CongBo,
+                    TrangThai = u.TrangThai,
+                    NgayTao = u.Ngaytao,
+                    NgayCapNhat = u.NgayCapNhap,
+                    MaButDanh = u.MaButDanh,
+                    TenButDanh = u.MaButDanhNavigation.TenButDanh,
+                    TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null
+                })
+                .ToListAsync();
             var responseData = taiKhoan.Select(t => new
             {
                 MaButDanh = t.MaButDanh,
@@ -673,7 +695,7 @@ namespace demodoan1.Controllers
             return Ok(new
             {
                 status = StatusCodes.Status200OK,
-                data = responseData
+                data = dsTruyen
             });
         }
     }
