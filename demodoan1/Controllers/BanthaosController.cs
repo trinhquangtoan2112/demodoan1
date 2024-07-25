@@ -81,7 +81,7 @@ namespace demodoan1.Controllers
                 return NotFound();
             }
 
-            return banthao;
+            return Ok(new { status = StatusCodes.Status200OK, Data = banthao });
         }
         [HttpGet("DanhSachBanThaoTheoTruyen")]
         public async Task<ActionResult<Banthao>> DanhSachBanThaoTheoTruyen(int id)
@@ -131,7 +131,11 @@ namespace demodoan1.Controllers
         {
             try
             {
-
+                var truyen = _context.Truyens.FirstOrDefault(item => item.MaTruyen == banthaoDto.MaTruyen);
+                if(truyen == null)
+                {
+                    return NotFound();
+                }
                 var banThao = new Banthao
                 {
                     Noidung = banthaoDto.Noidung,
