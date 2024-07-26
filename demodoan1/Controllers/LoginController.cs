@@ -768,5 +768,50 @@ namespace demodoan1.Controllers
             }
 
         }
+
+        [HttpPut("NangcaptaiKhoanVip")]
+        public async Task<IActionResult> NangcaptaiKhoanVip([FromQuery] string id)
+        {
+            try
+            {
+                var detailNguoiDung = await _appDbContext.Users.FirstOrDefaultAsync(item => item.MaNguoiDung == Int64.Parse(id));
+                if (detailNguoiDung == null)
+                {
+                    return NotFound("Người dùng không tồn tại.");
+
+                }
+                if(detailNguoiDung.SoXu <500 || detailNguoiDung.SoXu == null)
+                {
+                    return BadRequest("Không đủ số dư");
+                }
+
+                detailNguoiDung.SoXu -= 500;
+
+                detailNguoiDung.Vip = true;
+                if (detailNguoiDung.NgayHetHanVip.HasValue)
+                {
+                    detailNguoiDung.NgayHetHanVip = detailNguoiDung.NgayHetHanVip.Value.AddDays(90);
+                }
+                else
+                {
+                    detailNguoiDung.NgayHetHanVip = DateTime.Now.AddDays(90);
+                }
+                _appDbContext.Users.Update(detailNguoiDung);
+                _appDbContext.SaveChanges();
+
+
+                return Ok(new
+                {
+                    status = StatusCodes.Status200OK,
+                  message ="Thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi");
+
+            }
+
+        }
     }
 }
