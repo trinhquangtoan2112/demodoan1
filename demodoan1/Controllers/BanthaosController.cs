@@ -147,7 +147,7 @@ namespace demodoan1.Controllers
                 _context.Banthaos.Add(banThao);
                 await _context.SaveChangesAsync();
 
-                return Ok();
+                return Ok(new {data=banthaoDto,status =StatusCodes.Status200OK});
             }
             catch (Exception ex)
             {

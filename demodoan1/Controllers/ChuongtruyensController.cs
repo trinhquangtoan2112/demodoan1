@@ -109,7 +109,7 @@ namespace demodoan1.Controllers
         {
 
 
-            var taiKhoan = await _context.Chuongtruyens.Where(item => item.MaTruyen == id && item.TrangThai !=22).ToListAsync();
+            var taiKhoan = await _context.Chuongtruyens.Where(item => item.MaTruyen == id && item.MaChuong !=22).ToListAsync();
                 var taiKhoan1 =  _context.Truyens.FirstOrDefault(item => item.MaTruyen == id);
             if (taiKhoan.Count == 0)
             {
@@ -248,7 +248,114 @@ namespace demodoan1.Controllers
                 return BadRequest();
             }
         }
+        [HttpGet("GetChiTietChuongAdmin")]
+        public async Task<ActionResult<Chuongtruyen>> GetChiTietChuongAdmin([FromQuery] int maChuong, [FromQuery] string? token)
+        {
+            try
+            {
+                var currentChapter = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == maChuong );
 
+                if (currentChapter == null)
+                {
+                    return NotFound();
+
+                }
+                else
+                {
+                    var hasNextChapter = await _context.Chuongtruyens
+        .AnyAsync(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt);
+
+
+                    var previousChapter = await _context.Chuongtruyens
+                        .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt < currentChapter.Stt)
+                        .OrderByDescending(c => c.Stt)
+                        .FirstOrDefaultAsync();
+
+                    var nextChapter = await _context.Chuongtruyens
+                        .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt)
+                        .OrderBy(c => c.Stt)
+                        .FirstOrDefaultAsync();
+                    if (currentChapter.GiaChuong == 0)
+                    {
+                        var responseData = new
+                        {
+                            maTruyen = currentChapter.MaTruyen,
+                            Machuongtruyen = currentChapter.MaChuong,
+                            TenChuong = currentChapter.TenChuong,
+                            TrangThai = currentChapter.TrangThai,
+                            NoiDung = currentChapter.NoiDung,
+                            HienThi = currentChapter.HienThi,
+                            GiaChuong = currentChapter.GiaChuong,
+                            LuotDoc = currentChapter.LuotDoc,
+                            Stt = currentChapter.Stt,
+                            Solike = _context.Likes.Count(l => l.MaThucThe == currentChapter.MaChuong),
+                            NgayTao = currentChapter.Ngaytao,
+                            NgayCapNhat = currentChapter.NgayCapNhap,
+                            trangTruoc = previousChapter?.MaChuong,
+                            trangTiep = nextChapter?.MaChuong
+                        };
+                        return Ok(new { StatusCode = StatusCodes.Status200OK, data = responseData });
+                    }
+                    else
+                    {
+                        string tokenData = null;
+                        var responseData1 = new
+                        {
+
+
+                            trangTruoc = previousChapter?.MaChuong,
+                            trangTiep = nextChapter?.MaChuong
+                        };
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            tokenData = TokenClass.Decodejwt(token);
+                            Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData)) : false;
+
+                            if (!daMua)
+                            {
+
+                                return Unauthorized(new
+                                {
+                                    Status = StatusCodes.Status401Unauthorized,
+                                    data = responseData1
+                                });
+                            }
+                            var responseData = new
+                            {
+                                Machuongtruyen = currentChapter.MaChuong,
+                                TenChuong = currentChapter.TenChuong,
+                                TrangThai = currentChapter.TrangThai,
+                                NoiDung = currentChapter.NoiDung,
+                                HienThi = currentChapter.HienThi,
+                                GiaChuong = currentChapter.GiaChuong,
+                                LuotDoc = currentChapter.LuotDoc,
+                                Stt = currentChapter.Stt,
+                                NgayTao = currentChapter.Ngaytao,
+                                NgayCapNhat = currentChapter.NgayCapNhap,
+                                trangTruoc = previousChapter?.MaChuong,
+                                trangTiep = nextChapter?.MaChuong
+                            };
+                            return Ok(new
+                            {
+                                Status = StatusCodes.Status200OK,
+                                data = responseData
+                            });
+                        }
+
+                        return Unauthorized(new
+                        {
+                            Status = StatusCodes.Status401Unauthorized,
+                            data = responseData1
+                        });
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
         // PUT: api/Chuongtruyens/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("CapNhapChuongTruyen")]

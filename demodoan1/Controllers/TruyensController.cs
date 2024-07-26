@@ -544,7 +544,7 @@ namespace demodoan1.Controllers
         [HttpGet("DanhsachTruyenCanDuyet")]
         public async Task<ActionResult> DanhsachTruyenCanDuyet()
         {
-            var taiKhoan = _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.TrangThai == 0).ToList();
+            var taiKhoan = _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.TrangThai == 0 ).ToList();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new
