@@ -37,7 +37,7 @@ namespace demodoan1.Controllers
                  tokenData = TokenClass.Decodejwt(token);
             }
           
-            var taiKhoan = await _context.Chuongtruyens.Where(item =>item.MaTruyen ==maTruyen && item.TrangThai!=0).ToListAsync();
+            var taiKhoan = await _context.Chuongtruyens.Where(item =>item.MaTruyen ==maTruyen && item.TrangThai!=0 && item.HienThi != 0 && item.TrangThai != 4).ToListAsync();
             if (taiKhoan.Count == 0)
             {
                 return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
@@ -66,7 +66,79 @@ namespace demodoan1.Controllers
             });
            
         }
+        [HttpGet("DanhsachchuongTacGia")]
+        public async Task<ActionResult> DanhsachchuongTacGia([FromQuery] int maTruyen, [FromQuery] string? token)
+        {
+            string tokenData = null;
+            if (!string.IsNullOrEmpty(token))
+            {
+                tokenData = TokenClass.Decodejwt(token);
+            }
 
+            var taiKhoan = await _context.Chuongtruyens.Where(item => item.MaTruyen == maTruyen && item.TrangThai != 0 ).ToListAsync();
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var responseData = taiKhoan.Select(u => new
+            {
+                Machuongtruyen = u.MaChuong,
+                TenChuong = u.TenChuong,
+                TrangThai = u.TrangThai,
+                Luotdoc = u.LuotDoc,
+                HienThi = u.HienThi,
+                GiaChuong = u.GiaChuong,
+                Stt = u.Stt,
+                NgayTao = u.Ngaytao,
+                NgayCapNhat = u.NgayCapNhap,
+                Damua = u.GiaChuong > 0
+        ? tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == u.MaChuong && g.MaNguoiDung == Int64.Parse(tokenData)) : false
+        : (bool?)true // Return null if GiaChuong is not greater than 0
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+
+        }
+        [HttpGet("DanhsachchuongID")]
+        public async Task<ActionResult> DanhsachchuongID([FromQuery] int id )
+        {
+
+
+            var taiKhoan = await _context.Chuongtruyens.Where(item => item.MaTruyen == id && item.TrangThai !=22).ToListAsync();
+                var taiKhoan1 =  _context.Truyens.FirstOrDefault(item => item.MaTruyen == id);
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var responseData = taiKhoan.Select(u => new
+            {
+                Machuongtruyen = u.MaChuong,
+                TenChuong = u.TenChuong,
+                TrangThai = u.TrangThai,
+                Luotdoc = u.LuotDoc,
+                HienThi = u.HienThi,
+                GiaChuong = u.GiaChuong,
+                Stt = u.Stt,
+                NgayTao = u.Ngaytao,
+                NgayCapNhat = u.NgayCapNhap,
+                Damua = u.GiaChuong > 0,
+                
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData,
+                tenTruyen = taiKhoan1.TenTruyen
+            });
+
+        }
         // GET: api/Chuongtruyens/5
         [HttpGet("GetChiTietChuong")]
         public async Task<ActionResult<Chuongtruyen>> GetChuongtruyen([FromQuery] int maChuong, [FromQuery] string? token)
@@ -293,6 +365,60 @@ namespace demodoan1.Controllers
             {
                 status = StatusCodes.Status200OK,
                 message ="An thanh cong"
+            });
+        }
+        [HttpPut("HienChuong")]
+        public async Task<IActionResult> HienChuong(int id)
+        {
+            var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
+            if (chuongtruyen == null)
+            {
+                return NotFound();
+            }
+            chuongtruyen.HienThi = 1;
+            _context.Chuongtruyens.Update(chuongtruyen);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "An thanh cong"
+            });
+        }
+        [HttpPut("KhoaChuongTruyen")]
+        public async Task<IActionResult> KhoaChuongTruyen(int id)
+        {
+            var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
+            if (chuongtruyen == null)
+            {
+                return NotFound();
+            }
+            chuongtruyen.TrangThai = 4;
+            _context.Chuongtruyens.Update(chuongtruyen);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "An thanh cong"
+            });
+        }
+        [HttpPut("BoKhoaChuong")]
+        public async Task<IActionResult> BoKhoaChuong(int id)
+        {
+            var chuongtruyen = await _context.Chuongtruyens.FindAsync(id);
+            if (chuongtruyen == null)
+            {
+                return NotFound();
+            }
+            chuongtruyen.TrangThai = 1;
+            _context.Chuongtruyens.Update(chuongtruyen);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                message = "An thanh cong"
             });
         }
         [HttpGet("timkiemchuong", Name = "timkiemchuong")]

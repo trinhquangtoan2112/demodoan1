@@ -232,7 +232,7 @@ namespace demodoan1.Controllers
                 Page = page,
                 PageSize = pageSize,
                 Data = truyen.Chuongtruyens
-                    .Where(ch => ch.TrangThai != 0 && ch.HienThi != 0)
+                    .Where(ch => ch.TrangThai != 0 && ch.HienThi != 0 &&ch.TrangThai !=4)
                     .OrderBy(ch => ch.Stt)
                     .Skip(skip)
                     .Take(take)
@@ -296,7 +296,7 @@ namespace demodoan1.Controllers
                 Page = page,
                 PageSize = pageSize,
                 Data = truyen.Chuongtruyens
-                    .Where(ch => ch.TrangThai != 3 && ch.HienThi != 0)
+                    .Where(ch => ch.TrangThai != 4 && ch.HienThi != 0 &&ch.TrangThai !=4)
                     .OrderBy(ch => ch.Stt)
                     .Skip(skip)
                     .Take(take)
