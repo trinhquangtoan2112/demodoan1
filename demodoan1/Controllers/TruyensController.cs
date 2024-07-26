@@ -113,6 +113,7 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                DiemDanhGia = _context.Danhgia.Any() ? _context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia) : 0,
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -128,6 +129,7 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                DiemDanhGia = _context.Danhgia.Any() ? _context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia) : 0,
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -217,6 +219,7 @@ namespace demodoan1.Controllers
                 AnhBia = truyen.AnhBia,
                 CongBo = truyen.CongBo,
                 TrangThai = truyen.TrangThai,
+                DiemDanhGia = _context.Danhgia.Any() ? _context.Danhgia.Where(dg => dg.MaTruyen == truyen.MaTruyen).Average(dg => dg.DiemDanhGia) : 0,
                 NgayTao = truyen.Ngaytao,
                 NgayCapNhat = truyen.NgayCapNhap,
                 TenButDanh = truyen.MaButDanhNavigation?.TenButDanh,
@@ -611,6 +614,7 @@ namespace demodoan1.Controllers
                 moTa = u.MoTa,
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
+                DiemDanhGia = _context.Danhgia.Any() ? _context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia) : 0,
                 NgayTao = u.Ngaytao,
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
@@ -625,6 +629,7 @@ namespace demodoan1.Controllers
                 data = responseData
             });
         }
+        
         [HttpGet("GetTruyenTheoIDNguoiDung")]
         public async Task<ActionResult> GetTruyenTheoIDNguoiDung(String token)
         {
