@@ -447,7 +447,7 @@ namespace demodoan1.Controllers
                 string tokenData = TokenClass.Decodejwt(token);
                 if (Int64.Parse(tokenData) == adduser.maNguoiDung)
                 {
-                    var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData));
+                    var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item.TenNguoiDung != adduser.TenNguoiDung);
                     if (dataUser == null)
                     {
                         return NotFound(new
