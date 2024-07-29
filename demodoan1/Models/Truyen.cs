@@ -8,6 +8,7 @@ public partial class Truyen
     public int MaTruyen { get; set; }
 
     public string? TenTruyen { get; set; }
+    public string? TacGia { get; set; }
 
     public string? MoTa { get; set; }
 

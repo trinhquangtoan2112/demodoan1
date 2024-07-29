@@ -12,7 +12,7 @@
 
         public string? AnhBia { get; set; }
 
-        public string? TenButDanh { get; set; }
+        public string? tacGia { get; set; }
 
         public string? TenTheLoai { get; set; }
     }

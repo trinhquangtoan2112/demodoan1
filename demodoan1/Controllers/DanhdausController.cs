@@ -50,9 +50,7 @@ namespace demodoan1.Controllers
                     TenTruyen = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.TenTruyen,
                     MoTa = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MoTa,
                     AnhBia = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.AnhBia,
-                    TenButDanh = _context.Truyens
-                        .Include(t => t.MaButDanhNavigation)
-                        .FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MaButDanhNavigation.TenButDanh,
+                    tacGia = _context.Truyens.FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.TacGia,
                     TenTheLoai = _context.Truyens
                         .Include(t => t.MaTheLoaiNavigation)
                         .FirstOrDefault(t => t.MaTruyen == d.MaTruyen)?.MaTheLoaiNavigation.TenTheLoai

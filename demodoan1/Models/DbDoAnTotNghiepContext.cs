@@ -551,6 +551,11 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasColumnName("tenTruyen")
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
+            entity.Property(e => e.TacGia)
+                .HasMaxLength(100)
+                .HasColumnName("tacGia")
+                .UseCollation("utf8mb3_general_ci")
+                .HasCharSet("utf8mb3");
             entity.Property(e => e.TrangThai).HasColumnName("trangThai");
 
             entity.HasOne(d => d.MaButDanhNavigation).WithMany(p => p.Truyens)

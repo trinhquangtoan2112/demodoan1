@@ -108,6 +108,7 @@ namespace demodoan1.Controllers
             {
                 MaTruyen = u.MaTruyen,
                 TenTruyen = u.TenTruyen,
+                TacGia = u.TacGia,
                 moTa = u.MoTa,
                 AnhBia = u.AnhBia,
                 CongBo = u.CongBo,
@@ -124,7 +125,7 @@ namespace demodoan1.Controllers
             {
                 MaTruyen = u.MaTruyen,
                 TenTruyen = u.TenTruyen,
-               
+                TacGia = u.TacGia,
                 AnhBia = u.AnhBia,
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
@@ -215,6 +216,7 @@ namespace demodoan1.Controllers
             {
                 MaTruyen = truyen.MaTruyen,
                 TenTruyen = truyen.TenTruyen,
+                TacGia = truyen.TacGia,
                 MoTa = truyen.MoTa,
                 AnhBia = truyen.AnhBia,
                 CongBo = truyen.CongBo,
@@ -350,6 +352,7 @@ namespace demodoan1.Controllers
                     }
                 }
                 datauserr.TenTruyen = truyenDto.TenTruyen;
+                datauserr.TacGia = truyenDto.TacGia;
                 datauserr.MoTa = truyenDto.MoTa;
                 datauserr.AnhBia = linkTruyen != null ? linkTruyen : datauserr.AnhBia;
                 datauserr.MaTheLoai = truyenDto.MaTheLoai;
@@ -415,6 +418,7 @@ namespace demodoan1.Controllers
                     var truyen = new Truyen
                     {
                         TenTruyen = truyenDto.TenTruyen,
+                        TacGia = truyenDto.TacGia,
                         MoTa = truyenDto.MoTa,
                         AnhBia = linkTruyen != null ? linkTruyen : null,
                         CongBo = 0,

@@ -4,6 +4,7 @@
     {
 
         public string? TenTruyen { get; set; }
+        public string? TacGia { get; set; }
         public string? MoTa { get; set; }
         public IFormFile? AnhBia { get; set; }
         public int MaButDanh { get; set; }
