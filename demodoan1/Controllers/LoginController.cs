@@ -447,7 +447,16 @@ namespace demodoan1.Controllers
                 string tokenData = TokenClass.Decodejwt(token);
                 if (Int64.Parse(tokenData) == adduser.maNguoiDung)
                 {
-                    var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) && item.TenNguoiDung != adduser.TenNguoiDung);
+                    var tennguoiDung = _appDbContext.Users.FirstOrDefault(item => string.Equals(item.TenNguoiDung, adduser.TenNguoiDung, StringComparison.OrdinalIgnoreCase));
+                    if (tennguoiDung != null)
+                    {
+                        return Unauthorized(new
+                        {
+                            success = StatusCodes.Status401Unauthorized,
+                            data = "Tên người dùng đã tồn tại"
+                        });
+                    }
+                    var dataUser = _appDbContext.Users.FirstOrDefault(item => item.MaNguoiDung == Int64.Parse(tokenData) );
                     if (dataUser == null)
                     {
                         return NotFound(new
@@ -796,10 +805,20 @@ namespace demodoan1.Controllers
                 {
                     detailNguoiDung.NgayHetHanVip = DateTime.Now.AddDays(90);
                 }
+
+                var newGiaoDich = new Giaodich
+                {
+                    MaNguoiDung = (int)Int64.Parse(id),
+                    MaChuongTruyen = 22,
+                    LoaiGiaoDich = 3,
+                    LoaiTien = 1,
+                    Trangthai = 1,
+                    SoTien = 500
+
+                };
+                _appDbContext.Giaodiches.Add(newGiaoDich);
                 _appDbContext.Users.Update(detailNguoiDung);
                 _appDbContext.SaveChanges();
-
-
                 return Ok(new
                 {
                     status = StatusCodes.Status200OK,

@@ -30,14 +30,14 @@ namespace demodoan1.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Giaodich>> GetGiaodich(int id)
         {
-            var giaodich = await _context.Giaodiches.FindAsync(id);
+            var giaodich =  _context.Giaodiches.Where(item => item.MaNguoiDung == id).ToListAsync();
 
             if (giaodich == null)
             {
                 return NotFound();
             }
 
-            return giaodich;
+            return Ok();
         }
 
         // PUT: api/Giaodiches/5

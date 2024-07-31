@@ -546,14 +546,14 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("ngaytao");
-            entity.Property(e => e.TenTruyen)
-                .HasMaxLength(100)
-                .HasColumnName("tenTruyen")
-                .UseCollation("utf8mb3_general_ci")
-                .HasCharSet("utf8mb3");
             entity.Property(e => e.TacGia)
                 .HasMaxLength(100)
                 .HasColumnName("tacGia")
+                .UseCollation("utf8mb3_general_ci")
+                .HasCharSet("utf8mb3");
+            entity.Property(e => e.TenTruyen)
+                .HasMaxLength(100)
+                .HasColumnName("tenTruyen")
                 .UseCollation("utf8mb3_general_ci")
                 .HasCharSet("utf8mb3");
             entity.Property(e => e.TrangThai).HasColumnName("trangThai");

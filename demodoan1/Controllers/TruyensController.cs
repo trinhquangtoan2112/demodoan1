@@ -418,7 +418,7 @@ namespace demodoan1.Controllers
                     var truyen = new Truyen
                     {
                         TenTruyen = truyenDto.TenTruyen,
-                        TacGia = truyenDto.TacGia,
+                    
                         MoTa = truyenDto.MoTa,
                         AnhBia = linkTruyen != null ? linkTruyen : null,
                         CongBo = 0,
