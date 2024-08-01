@@ -447,7 +447,13 @@ namespace demodoan1.Controllers
                 string tokenData = TokenClass.Decodejwt(token);
                 if (Int64.Parse(tokenData) == adduser.maNguoiDung)
                 {
-                    var tennguoiDung = _appDbContext.Users.FirstOrDefault(item => string.Equals(item.TenNguoiDung, adduser.TenNguoiDung, StringComparison.OrdinalIgnoreCase));
+                    var tennguoiDung = _appDbContext.Users
+       .AsEnumerable() 
+       .FirstOrDefault(item =>
+           string.Equals(item.TenNguoiDung, adduser.TenNguoiDung, StringComparison.OrdinalIgnoreCase) &&
+           item.MaNguoiDung != Int64.Parse(tokenData)
+       );
+
                     if (tennguoiDung != null)
                     {
                         return Unauthorized(new
