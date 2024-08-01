@@ -777,7 +777,6 @@ namespace demodoan1.Controllers
             }
 
         }
-
         [HttpPut("NangcaptaiKhoanVip")]
         public async Task<IActionResult> NangcaptaiKhoanVip([FromQuery] string id)
         {
@@ -787,23 +786,24 @@ namespace demodoan1.Controllers
                 if (detailNguoiDung == null)
                 {
                     return NotFound("Người dùng không tồn tại.");
-
                 }
-                if(detailNguoiDung.SoXu <500 || detailNguoiDung.SoXu == null)
+                if (detailNguoiDung.SoXu < 500 || detailNguoiDung.SoXu == null)
                 {
                     return BadRequest("Không đủ số dư");
                 }
 
                 detailNguoiDung.SoXu -= 500;
 
-                detailNguoiDung.Vip = true;
-                if (detailNguoiDung.NgayHetHanVip.HasValue)
+                if (detailNguoiDung.Vip != true)
                 {
-                    detailNguoiDung.NgayHetHanVip = detailNguoiDung.NgayHetHanVip.Value.AddDays(90);
+                    detailNguoiDung.Vip = true;
+                    detailNguoiDung.NgayHetHanVip = DateTime.Now.AddDays(30);
                 }
                 else
                 {
-                    detailNguoiDung.NgayHetHanVip = DateTime.Now.AddDays(90);
+                    detailNguoiDung.NgayHetHanVip = detailNguoiDung.NgayHetHanVip.HasValue
+                        ? detailNguoiDung.NgayHetHanVip.Value.AddDays(30)
+                        : DateTime.Now.AddDays(30);
                 }
 
                 var newGiaoDich = new Giaodich
@@ -814,23 +814,23 @@ namespace demodoan1.Controllers
                     LoaiTien = 1,
                     Trangthai = 1,
                     SoTien = 500
-
                 };
+
                 _appDbContext.Giaodiches.Add(newGiaoDich);
                 _appDbContext.Users.Update(detailNguoiDung);
-                _appDbContext.SaveChanges();
+                await _appDbContext.SaveChangesAsync();
+
                 return Ok(new
                 {
                     status = StatusCodes.Status200OK,
-                  message ="Thành công"
+                    message = "Thành công"
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest("Lỗi");
-
+                return BadRequest("Lỗi: " + ex.Message);
             }
-
         }
+
     }
 }
