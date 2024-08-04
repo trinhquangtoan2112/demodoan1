@@ -167,7 +167,15 @@ namespace demodoan1.Controllers
                         .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt)
                         .OrderBy(c => c.Stt)
                         .FirstOrDefaultAsync();
-                    if (currentChapter.GiaChuong == 0)
+                    // Get the first 10 chapters
+                    var first10Chapters = await _context.Chuongtruyens
+                        .Where(c => c.MaTruyen == currentChapter.MaTruyen)
+                        .OrderBy(c => c.Stt)
+                        .Take(10)
+                        .Select(c => c.MaChuong)
+                        .ToListAsync();
+
+                    if (currentChapter.GiaChuong == 0 || first10Chapters.Contains(currentChapter.MaChuong))
                     {
                         var responseData = new
                         {
@@ -193,15 +201,19 @@ namespace demodoan1.Controllers
                         string tokenData = null;
                         var responseData1 = new
                         {
-
-
+                            Machuongtruyen = currentChapter.MaChuong,
+                            Stt = currentChapter.Stt,
+                            TenChuong = currentChapter.TenChuong,
+                            maTruyen = currentChapter.MaTruyen,
+                            Solike = _context.Likes.Count(l => l.MaThucThe == currentChapter.MaChuong),
+                            GiaChuong = currentChapter.GiaChuong,
                             trangTruoc = previousChapter?.MaChuong,
                             trangTiep = nextChapter?.MaChuong
                         };
                         if (!string.IsNullOrEmpty(token))
                         {
                             tokenData = TokenClass.Decodejwt(token);
-                            Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData)) : false;
+                            Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData) && g.LoaiGiaoDich == 1) : false;
                           
                             if (!daMua)
                             {
@@ -222,6 +234,7 @@ namespace demodoan1.Controllers
                                 GiaChuong = currentChapter.GiaChuong,
                                 LuotDoc = currentChapter.LuotDoc,
                                 Stt = currentChapter.Stt,
+                                Solike = _context.Likes.Count(l => l.MaThucThe == currentChapter.MaChuong),
                                 NgayTao = currentChapter.Ngaytao,
                                 NgayCapNhat = currentChapter.NgayCapNhap,
                                 trangTruoc = previousChapter?.MaChuong,
@@ -248,6 +261,7 @@ namespace demodoan1.Controllers
                 return BadRequest();
             }
         }
+        
         [HttpGet("GetChiTietChuongAdmin")]
         public async Task<ActionResult<Chuongtruyen>> GetChiTietChuongAdmin([FromQuery] int maChuong, [FromQuery] string? token)
         {
@@ -275,8 +289,7 @@ namespace demodoan1.Controllers
                         .Where(c => c.MaTruyen == currentChapter.MaTruyen && c.Stt > currentChapter.Stt)
                         .OrderBy(c => c.Stt)
                         .FirstOrDefaultAsync();
-                    if (currentChapter.GiaChuong == 0)
-                    {
+
                         var responseData = new
                         {
                             maTruyen = currentChapter.MaTruyen,
@@ -295,60 +308,7 @@ namespace demodoan1.Controllers
                             trangTiep = nextChapter?.MaChuong
                         };
                         return Ok(new { StatusCode = StatusCodes.Status200OK, data = responseData });
-                    }
-                    else
-                    {
-                        string tokenData = null;
-                        var responseData1 = new
-                        {
 
-
-                            trangTruoc = previousChapter?.MaChuong,
-                            trangTiep = nextChapter?.MaChuong
-                        };
-                        if (!string.IsNullOrEmpty(token))
-                        {
-                            tokenData = TokenClass.Decodejwt(token);
-                            Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData)) : false;
-
-                            if (!daMua)
-                            {
-
-                                return Unauthorized(new
-                                {
-                                    Status = StatusCodes.Status401Unauthorized,
-                                    data = responseData1
-                                });
-                            }
-                            var responseData = new
-                            {
-                                Machuongtruyen = currentChapter.MaChuong,
-                                TenChuong = currentChapter.TenChuong,
-                                TrangThai = currentChapter.TrangThai,
-                                NoiDung = currentChapter.NoiDung,
-                                HienThi = currentChapter.HienThi,
-                                GiaChuong = currentChapter.GiaChuong,
-                                LuotDoc = currentChapter.LuotDoc,
-                                Stt = currentChapter.Stt,
-                                NgayTao = currentChapter.Ngaytao,
-                                NgayCapNhat = currentChapter.NgayCapNhap,
-                                trangTruoc = previousChapter?.MaChuong,
-                                trangTiep = nextChapter?.MaChuong
-                            };
-                            return Ok(new
-                            {
-                                Status = StatusCodes.Status200OK,
-                                data = responseData
-                            });
-                        }
-
-                        return Unauthorized(new
-                        {
-                            Status = StatusCodes.Status401Unauthorized,
-                            data = responseData1
-                        });
-
-                    }
                 }
             }
             catch (Exception ex)
@@ -374,6 +334,7 @@ namespace demodoan1.Controllers
                  
                 
                     thongTin.TenChuong = chuongtruyen.TenChuong;
+                    thongTin.GiaChuong = chuongtruyen.GiaChuong;
                         thongTin.NoiDung = chuongtruyen.NoiDung;
                     thongTin.TrangThai = 0;
                        
@@ -413,7 +374,7 @@ namespace demodoan1.Controllers
                     TrangThai = 0,
                     NoiDung = chuongtruyenDto.NoiDung,
                     HienThi = 1,
-                    GiaChuong = 0,
+                    GiaChuong = chuongtruyenDto.GiaChuong,
                     LuotDoc = 0,
                     MaTruyen = chuongtruyenDto.MaTruyen,
                     Stt = maxStt + 1
