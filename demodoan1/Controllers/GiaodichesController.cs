@@ -43,12 +43,19 @@ namespace demodoan1.Controllers
                         Ngaytao = d.Ngaytao,
                         LoaiGiaoDich = d.LoaiGiaoDich,
                         NoiDung = d.LoaiGiaoDich == 1
-                            ? "Bạn đã mua chương " +
+                            ? "Bạn đã mua Chương " +
+                                _context.Chuongtruyens
+                                  .Where(ct => ct.MaChuong == d.MaChuongTruyen)
+                                  .Select(ct => ct.Stt)
+                                  .FirstOrDefault()
+                            +
+                            ": '"
+                            +
                               _context.Chuongtruyens
                                   .Where(ct => ct.MaChuong == d.MaChuongTruyen)
                                   .Select(ct => ct.TenChuong)
                                   .FirstOrDefault() +
-                              " của truyện " +
+                              "' của truyện " +
                               _context.Chuongtruyens
                                   .Where(ct => ct.MaChuong == d.MaChuongTruyen)
                                   .Select(ct => ct.MaTruyenNavigation.TenTruyen)
