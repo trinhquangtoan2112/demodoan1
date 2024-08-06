@@ -19,6 +19,8 @@ public partial class Lichsudoc
 
     public DateTime? NgayCapNhap { get; set; }
 
+    public int? ViTri { get; set; }
+
     public virtual Chuongtruyen MaChuongTruyenNavigation { get; set; } = null!;
 
     public virtual User MaNguoiDungNavigation { get; set; } = null!;

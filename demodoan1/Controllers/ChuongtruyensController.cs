@@ -146,8 +146,15 @@ namespace demodoan1.Controllers
             try
             {
                 var currentChapter = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == maChuong &&item.TrangThai !=0);
-
-                if (currentChapter == null)
+                string tokenData = null;
+                Lichsudoc lichSuDoc =null;
+                tokenData = TokenClass.Decodejwt(token);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    lichSuDoc = _context.Lichsudocs.FirstOrDefault(item => item.MaChuongTruyen == maChuong && item.MaNguoiDung == Int64.Parse(tokenData));
+                    
+                }
+                    if (currentChapter == null)
                 {
                     return NotFound();
 
@@ -192,13 +199,14 @@ namespace demodoan1.Controllers
                             NgayTao = currentChapter.Ngaytao,
                             NgayCapNhat = currentChapter.NgayCapNhap,
                             trangTruoc = previousChapter?.MaChuong,
-                            trangTiep = nextChapter?.MaChuong
+                            trangTiep = nextChapter?.MaChuong,
+                            viTri = lichSuDoc!=null? lichSuDoc.ViTri:0
                         };
                         return Ok(new { StatusCode = StatusCodes.Status200OK, data = responseData });
                     }
                     else
                     {
-                        string tokenData = null;
+                       
                         var responseData1 = new
                         {
                             Machuongtruyen = currentChapter.MaChuong,
@@ -208,11 +216,12 @@ namespace demodoan1.Controllers
                             Solike = _context.Likes.Count(l => l.MaThucThe == currentChapter.MaChuong),
                             GiaChuong = currentChapter.GiaChuong,
                             trangTruoc = previousChapter?.MaChuong,
-                            trangTiep = nextChapter?.MaChuong
+                            trangTiep = nextChapter?.MaChuong,
+                            viTri = lichSuDoc != null ? lichSuDoc.ViTri : 0
                         };
                         if (!string.IsNullOrEmpty(token))
                         {
-                            tokenData = TokenClass.Decodejwt(token);
+                          
                             Boolean daMua = tokenData != null ? _context.Giaodiches.Any(g => g.MaChuongTruyen == maChuong && g.MaNguoiDung == Int64.Parse(tokenData) && g.LoaiGiaoDich == 1) : false;
                           
                             if (!daMua)
@@ -238,7 +247,8 @@ namespace demodoan1.Controllers
                                 NgayTao = currentChapter.Ngaytao,
                                 NgayCapNhat = currentChapter.NgayCapNhap,
                                 trangTruoc = previousChapter?.MaChuong,
-                                trangTiep = nextChapter?.MaChuong
+                                trangTiep = nextChapter?.MaChuong,
+                                viTri = lichSuDoc != null ? lichSuDoc.ViTri : 0
                             };
                             return Ok(new
                             {

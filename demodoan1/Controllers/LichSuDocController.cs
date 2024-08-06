@@ -3,6 +3,7 @@ using demodoan1.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using ZstdSharp.Unsafe;
 
 namespace demodoan1.Controllers
@@ -76,7 +77,7 @@ namespace demodoan1.Controllers
                     {
                         MaNguoiDung = (int)Int64.Parse(tokenData),
                         MaChuongTruyen = maChuong,
-
+                       
                     };
                     _context.Lichsudocs.Add(newHistory1);
                     _context.SaveChanges();
@@ -89,7 +90,7 @@ namespace demodoan1.Controllers
                 {
                     MaNguoiDung = (int)Int64.Parse(tokenData),
                     MaChuongTruyen = maChuong,
-
+                  
                 };
                 _context.Lichsudocs.Add(newHistory);
                 _context.SaveChanges();
@@ -145,6 +146,41 @@ namespace demodoan1.Controllers
                 _context.SaveChanges();
                 return Ok(new { status = StatusCodes.Status204NoContent, message = "Xoa lich su thanh cong" });
             }
+        }
+
+
+
+        [HttpPost("CapNhapLichSuDocViTri")]
+        public async Task<ActionResult> CapNhapLichSuDocViTri(String? token, int maChuong,int viTri)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { Status = StatusCodes.Status400BadRequest, message = "Token không hợp lệ" });
+            }
+
+            string tokenData = TokenClass.Decodejwt(token);
+            var data = _context.Lichsudocs.Where(item => item.MaNguoiDung == Int64.Parse(tokenData));
+            var checkMaChuongTonTai = _context.Chuongtruyens.FirstOrDefault(item => item.MaChuong == maChuong);
+
+             if(checkMaChuongTonTai == null)
+            {
+                return BadRequest();
+            }
+
+            var lichsuDocCuaChuong = _context.Lichsudocs.FirstOrDefault(item => item.MaChuongTruyen == maChuong && item.MaNguoiDung == Int64.Parse(tokenData));
+            if(lichsuDocCuaChuong == null)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                lichsuDocCuaChuong.ViTri = viTri;
+                _context.Lichsudocs.Update(lichsuDocCuaChuong);
+                _context.SaveChanges();
+                return Ok();
+            }
+
+
         }
     }
 }

@@ -48,6 +48,9 @@ public partial class DbDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySql("server=localhost;user=root;password=#Quangtoan2112;database=dbDoAnTotNghiep;port=3306", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.36-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -357,6 +360,7 @@ public partial class DbDoAnTotNghiepContext : DbContext
                 .HasColumnType("bit(1)")
                 .HasColumnName("trangthaiDaDoc");
             entity.Property(e => e.TrangthaiXoa).HasColumnName("trangthaiXoa");
+            entity.Property(e => e.ViTri).HasColumnName("viTri");
 
             entity.HasOne(d => d.MaChuongTruyenNavigation).WithMany(p => p.Lichsudocs)
                 .HasForeignKey(d => d.MaChuongTruyen)
