@@ -153,11 +153,11 @@ namespace demodoan1.Controllers
                 }
 
                 // Kiểm tra điểm danh
-                if (giaodichDto.LoaiGiaoDich == 5)
+                if (giaodichDto.LoaiGiaoDich == 6)
                 {
                     var now = DateTime.UtcNow;
                     var lastAttendance = await _context.Giaodiches
-                        .Where(g => g.MaNguoiDung == maNguoiDung && g.LoaiGiaoDich == 5)
+                        .Where(g => g.MaNguoiDung == maNguoiDung && g.LoaiGiaoDich == 6)
                         .OrderByDescending(g => g.Ngaytao)
                         .FirstOrDefaultAsync();
 
@@ -170,6 +170,9 @@ namespace demodoan1.Controllers
                             return Unauthorized(new { status = StatusCodes.Status401Unauthorized, message = ($"Bạn cần đợi thêm {hoursRemaining:0} giờ để điểm danh lần nữa.") });
                         }
                     }
+
+                    detailNguoiDung.SoChiaKhoa = detailNguoiDung.SoChiaKhoa ?? 0;
+                    detailNguoiDung.SoDeCu = detailNguoiDung.SoDeCu ?? 0;
 
                     // Cập nhật số dư dựa trên loại giao dịch
                     if (detailNguoiDung.Vip == true)
