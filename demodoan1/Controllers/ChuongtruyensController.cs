@@ -631,5 +631,51 @@ namespace demodoan1.Controllers
             });
         }
 
+        [HttpGet("timkiemChuongTheoTenTruyen", Name = "timkiemChuongTheoTenTruyen")]
+        public async Task<ActionResult> timkiemChuongTheoTenTruyen(string? tenTruyen)
+        {
+            IQueryable<Truyen> query = _context.Truyens
+                                               .Include(u => u.MaButDanhNavigation)
+                                               .Include(u => u.MaTheLoaiNavigation);
+
+            if (!string.IsNullOrEmpty(tenTruyen))
+            {
+                query = query.Where(u => u.TenTruyen.Contains(tenTruyen));
+            }
+
+
+            var maTruyens = await query.Select(q => q.MaTruyen).ToListAsync();
+
+            var chuongTruyenCanDuyet = await _context.Chuongtruyens.Include(u => u.MaTruyenNavigation).ThenInclude(u => u.MaButDanhNavigation)
+                                                     .Where(item => maTruyens.Contains(item.MaTruyen) && item.TrangThai == 0 && item.MaChuong != 22)
+                                                     .ToListAsync();
+
+            if (chuongTruyenCanDuyet.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var responseData = chuongTruyenCanDuyet.Select(u => new
+            {
+                Machuongtruyen = u.MaChuong,
+                TenChuong = u.TenChuong,
+                TrangThai = u.TrangThai,
+                Luotdoc = u.LuotDoc,
+                HienThi = u.HienThi,
+                GiaChuong = u.GiaChuong,
+                Stt = u.Stt,
+                NgayTao = u.Ngaytao,
+                NgayCapNhat = u.NgayCapNhap,
+                TenTruyen = u.MaTruyenNavigation.TenTruyen,
+                tenButdanh = u.MaTruyenNavigation.MaButDanhNavigation.TenButDanh
+            }).ToList();
+
+            return Ok(new
+            {
+                status = StatusCodes.Status200OK,
+                data = responseData
+            });
+        }
+
     }
 }
