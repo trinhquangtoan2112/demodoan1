@@ -700,5 +700,139 @@ namespace demodoan1.Controllers
                 data = dsTruyen
             });
         }
+
+        /*
+.Sum(t => t.LoaiTien == 1 ? t.SoTien : t.MaChuongTruyenNavigation.GiaChuong* t.SoTien) :
+Sum tính tổng doanh thu từ các giao dịch đã lọc ở bước trước.
+t.LoaiTien == 1 ? t.SoTien : t.MaChuongTruyenNavigation.GiaChuong* t.SoTien là biểu thức điều kiện để tính doanh thu từ hai loại tiền khác nhau:
+Nếu LoaiTien == 1 (tức là xu), thì giá trị doanh thu chính là t.SoTien.
+Nếu LoaiTien == 2 (tức là chìa khóa), thì giá trị doanh thu là giá chương(GiaChuong) nhân với số tiền(SoTien). Điều này vì mỗi chìa khóa sẽ có giá trị bằng giá chương(GiaChuong).*/
+        [HttpGet("Xemdoanhthutruyen")]
+        public async Task<ActionResult> GetXemdoanhthutruyen(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return NotFound(new { status = StatusCodes.Status400BadRequest, message = "Không tìm thấy" });
+            }
+
+            token = token.Trim();
+            var data = token.Substring(7);
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+
+            if (!claimsData.ContainsKey("IdUserName") || !long.TryParse(claimsData["IdUserName"], out long iDNguoiDung))
+            {
+                return NotFound(new { status = StatusCodes.Status400BadRequest, message = "Không tìm thấy" });
+            }
+
+            var taiKhoan = await _context.Butdanhs.Include(u => u.Truyens)
+                .ThenInclude(u => u.MaTheLoaiNavigation)
+                .Where(item => item.MaNguoiDung == iDNguoiDung)
+                .ToListAsync();
+
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var maButDanhList = taiKhoan.Select(t => t.MaButDanh).ToList();
+
+            try
+            {
+                var dsTruyen = await _context.Truyens
+                    .Include(u => u.MaTheLoaiNavigation)
+                    .Include(u => u.MaButDanhNavigation)
+                    .Where(item => maButDanhList.Contains(item.MaButDanh))
+                    .Select(u => new
+                    {
+                        MaTruyen = u.MaTruyen,
+                        TenTruyen = u.TenTruyen,
+                        TenButDanh = u.MaButDanhNavigation.TenButDanh,
+                        TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                        Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc),
+                        LuotmuabangXu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 1),
+                        Luotmuabangchiakhoa = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 2),
+                        Tongdoanhthuthuve = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Where(t => t.LoaiGiaoDich == 1)
+                            .Sum(t => t.LoaiTien == 1 ? t.SoTien : 10 * t.SoTien),
+                        Sodecu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                    .Where(t => t.LoaiGiaoDich == 4 && t.LoaiTien == 4)
+                    .Sum(t => t.SoTien)
+                    }).ToListAsync();
+
+                return Ok(new { status = StatusCodes.Status200OK, data = dsTruyen });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { status = StatusCodes.Status500InternalServerError, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+
+        [HttpGet("XemdoanhthutruyenAdmin")]
+        public async Task<ActionResult> GetXemdoanhthutruyenAdmin(string token)
+        {
+            token = token.Trim();
+            var data = token.Substring(7); // Remove "Bearer " prefix
+            Dictionary<string, string> claimsData = TokenClass.DecodeToken(data);
+            string iDNguoiDung = claimsData["IdUserName"];
+            int maNguoiDung = (int)Int64.Parse(iDNguoiDung);
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return NotFound(new { status = StatusCodes.Status400BadRequest, message = "Không tìm thấy" });
+            }
+
+
+            var user = await _context.Users.FindAsync(maNguoiDung);
+            if (user.MaQuyen != 1) // Not admin
+            {
+                return Unauthorized(new { status = StatusCodes.Status401Unauthorized, message = "Bạn không có quyền xem thông tin." });
+            }
+
+            var taiKhoan = await _context.Butdanhs.Include(u => u.Truyens)
+                .ThenInclude(u => u.MaTheLoaiNavigation).ToListAsync();
+
+            if (taiKhoan.Count == 0)
+            {
+                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+            }
+
+            var maButDanhList = taiKhoan.Select(t => t.MaButDanh).ToList();
+
+            try
+            {
+                var dsTruyen = await _context.Truyens
+                    .Include(u => u.MaTheLoaiNavigation)
+                    .Include(u => u.MaButDanhNavigation)
+                    .Where(item => maButDanhList.Contains(item.MaButDanh))
+                    .Select(u => new
+                    {
+                        MaTruyen = u.MaTruyen,
+                        TenTruyen = u.TenTruyen,
+                        TenButDanh = u.MaButDanhNavigation.TenButDanh,
+                        TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                        Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc),
+                        LuotmuabangXu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 1),
+                        Luotmuabangchiakhoa = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 2),
+                        Tongdoanhthuthuve = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                            .Where(t => t.LoaiGiaoDich == 1)
+                            .Sum(t => t.LoaiTien == 1 ? t.SoTien : 10 * t.SoTien),
+                        Sodecu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
+                    .Where(t => t.LoaiGiaoDich == 4 && t.LoaiTien == 4)
+                    .Sum(t => t.SoTien)
+                    }).ToListAsync();
+
+                return Ok(new { status = StatusCodes.Status200OK, data = dsTruyen });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { status = StatusCodes.Status500InternalServerError, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
     }
 }
