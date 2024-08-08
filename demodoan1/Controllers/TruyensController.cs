@@ -51,6 +51,8 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -83,6 +85,8 @@ namespace demodoan1.Controllers
                     CongBo = u.CongBo,
                     TrangThai = u.TrangThai,
                     NgayTao = u.Ngaytao,
+                    Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                    Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                     coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                     NgayCapNhat = u.NgayCapNhap,
                     TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -97,54 +101,51 @@ namespace demodoan1.Controllers
                 });
             }
             [HttpGet("TrangChu")]
-        public async Task<ActionResult> GetTruyensTrangChu()
-        {
+            public async Task<ActionResult> GetTruyensTrangChu()
+            {
+                var taiKhoan = await _context.Truyens
+                    .Include(u => u.MaButDanhNavigation)
+                    .Include(u => u.MaTheLoaiNavigation)
+                    .Include(u => u.Chuongtruyens)
+                    .Where(item => item.CongBo != 0 && item.TrangThai != 0 && item.TrangThai != 4)
+                    .ToListAsync();
 
-            var taiKhoan = await _context.Truyens.Include(u => u.MaButDanhNavigation).Include(u => u.MaTheLoaiNavigation).Include(u => u.Chuongtruyens).Where(item => item.CongBo != 0 && item.TrangThai != 0 && item.TrangThai != 4).ToListAsync();
-            if (taiKhoan.Count == 0)
-            {
-                return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+                if (taiKhoan.Count == 0)
+                {
+                    return NotFound(new { status = StatusCodes.Status404NotFound, message = "Không tìm thấy" });
+                }
+
+                var truyens = taiKhoan.Select(u => new
+                {
+                    MaTruyen = u.MaTruyen,
+                    TenTruyen = u.TenTruyen,
+                    TacGia = u.TacGia,
+                    moTa = u.MoTa,
+                    AnhBia = u.AnhBia,
+                    CongBo = u.CongBo,
+                    TrangThai = u.TrangThai,
+                    NgayTao = u.Ngaytao,
+                    Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                    Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
+                    DiemDanhGia = _context.Danhgia.Any(dg => dg.MaTruyen == u.MaTruyen) ? Math.Round((double)_context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia), 1) : 0,
+                    coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
+                    NgayCapNhat = u.NgayCapNhap,
+                    TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
+                    TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                    Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
+                }).ToList();
+
+                var responseData = truyens.OrderByDescending(item => item.Sodecu).Take(3);
+                var responseData1 = truyens.OrderByDescending(item => item.NgayCapNhat).Skip(3).Take(12);
+
+                return Ok(new
+                {
+                    status = StatusCodes.Status200OK,
+                    Dexuat = responseData,
+                    conlai = responseData1
+                });
             }
-            var responseData = taiKhoan.Select(u => new
-            {
-                MaTruyen = u.MaTruyen,
-                TenTruyen = u.TenTruyen,
-                TacGia = u.TacGia,
-                moTa = u.MoTa,
-                AnhBia = u.AnhBia,
-                CongBo = u.CongBo,
-                TrangThai = u.TrangThai,
-                NgayTao = u.Ngaytao,
-                DiemDanhGia = _context.Danhgia.Any(dg => dg.MaTruyen == u.MaTruyen) ? Math.Round((double)_context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia), 1) : 0,
-                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
-                NgayCapNhat = u.NgayCapNhap,
-                TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
-                TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
-                Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
-            }).ToList().OrderByDescending(item => item.Luotdoc).Take(3);
-            var responseData1 = taiKhoan.Select(u => new
-            {
-                MaTruyen = u.MaTruyen,
-                TenTruyen = u.TenTruyen,
-                TacGia = u.TacGia,
-                AnhBia = u.AnhBia,
-                CongBo = u.CongBo,
-                TrangThai = u.TrangThai,
-                NgayTao = u.Ngaytao,
-                DiemDanhGia = _context.Danhgia.Any(dg => dg.MaTruyen == u.MaTruyen) ? Math.Round((double)_context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia), 1) : 0,
-                coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
-                NgayCapNhat = u.NgayCapNhap,
-                TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
-                TenTheLoai = u.MaTheLoai != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
-                Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc)
-            }).ToList().OrderByDescending(item => item.Luotdoc).Skip(3).Take(30);
-            return Ok(new
-            {
-                status = StatusCodes.Status200OK,
-                Dexuat = responseData,
-                conlai = responseData1
-            });
-        }
+
 
         [HttpGet("timkiem",Name ="Timkiem")]
         public async Task<ActionResult> GetTruyen(string? tenTruyen, int? matheLoa)
@@ -179,6 +180,8 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanhNavigation != null ? u.MaButDanhNavigation.TenButDanh : null,
                 TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
@@ -223,6 +226,8 @@ namespace demodoan1.Controllers
                     AnhBia = u.AnhBia,
                     CongBo = u.CongBo,
                     TrangThai = u.TrangThai,
+                    Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                    Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                     NgayTao = u.Ngaytao,
                     NgayCapNhat = u.NgayCapNhap,
                     MaButDanh = u.MaButDanh,
@@ -298,6 +303,7 @@ namespace demodoan1.Controllers
                 MaTheLoai = truyen.MaTheLoai,
                 MaButDanh = truyen.MaButDanh,
                 Solike = _context.Likes.Count(l => l.MaThucThe == truyen.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == truyen.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 TongLuotDoc = truyen.Chuongtruyens.Sum(c => c.LuotDoc),
                 TotalCount = totalPages, // Tổng số chương
                 Page = page,
@@ -358,6 +364,7 @@ namespace demodoan1.Controllers
                 TrangThai = truyen.TrangThai,
                 NgayTao = truyen.Ngaytao,
                 NgayCapNhat = truyen.NgayCapNhap,
+
                 TenButDanh = truyen.MaButDanhNavigation?.TenButDanh,
                 TenTheLoai = truyen.MaTheLoaiNavigation?.TenTheLoai,
                 MaTheLoai = truyen.MaTheLoai,
@@ -571,6 +578,8 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -635,6 +644,8 @@ namespace demodoan1.Controllers
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
                 NgayTao = u.Ngaytao,
+                Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
                 NgayCapNhat = u.NgayCapNhap,
                 TenButDanh = u.MaButDanh != null ? u.MaButDanhNavigation.TenButDanh : null,
@@ -687,6 +698,8 @@ namespace demodoan1.Controllers
                 moTa = u.MoTa,
                 CongBo = u.CongBo,
                 TrangThai = u.TrangThai,
+                Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
+                Sodecu = _context.Giaodiches.Count(l => l.MaChuongTruyenNavigation.MaTruyen == u.MaTruyen && l.LoaiGiaoDich == 4 && l.LoaiTien == 4),
                 DiemDanhGia = _context.Danhgia.Any(dg => dg.MaTruyen == u.MaTruyen) ? Math.Round((double)_context.Danhgia.Where(dg => dg.MaTruyen == u.MaTruyen).Average(dg => dg.DiemDanhGia), 1) : 0,
                 NgayTao = u.Ngaytao,
                 coPhi = u.Chuongtruyens.Any(u => u.GiaChuong > 0) ? true : false,
@@ -817,6 +830,7 @@ Nếu LoaiTien == 2 (tức là chìa khóa), thì giá trị doanh thu là giá 
                         TenButDanh = u.MaButDanhNavigation.TenButDanh,
                         TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
                         Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc),
+                        Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),
                         LuotmuabangXu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
                             .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 1),
                         Luotmuabangchiakhoa = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
@@ -881,6 +895,7 @@ Nếu LoaiTien == 2 (tức là chìa khóa), thì giá trị doanh thu là giá 
                         TenTruyen = u.TenTruyen,
                         TenButDanh = u.MaButDanhNavigation.TenButDanh,
                         TenTheLoai = u.MaTheLoaiNavigation != null ? u.MaTheLoaiNavigation.TenTheLoai : null,
+                        Solike = _context.Likes.Count(l => l.MaThucThe == u.MaTruyen && l.LoaiThucTheLike == 1),        
                         Luotdoc = u.Chuongtruyens.Sum(c => c.LuotDoc),
                         LuotmuabangXu = u.Chuongtruyens.SelectMany(c => c.Giaodiches)
                             .Count(t => t.LoaiGiaoDich == 1 && t.LoaiTien == 1),
